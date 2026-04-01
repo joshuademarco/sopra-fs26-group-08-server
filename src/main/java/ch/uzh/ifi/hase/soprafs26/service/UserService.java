@@ -14,6 +14,7 @@ import ch.uzh.ifi.hase.soprafs26.repository.UserRepository;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.Optional;
 
 /**
  * User Service
@@ -33,6 +34,19 @@ public class UserService {
 	public UserService(@Qualifier("userRepository") UserRepository userRepository) {
 		this.userRepository = userRepository;
 	}
+
+	public User getUserById(Long id) {
+        // Find the user in the database
+        Optional<User> userById = userRepository.findById(id);
+
+        // If not found, throw a 404 error so the frontend knows what happened
+        if (userById.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, 
+                String.format("User with ID %d was not found!", id));
+        }
+
+        return userById.get();
+    }
 
 	public List<User> getUsers() {
 		return this.userRepository.findAll();

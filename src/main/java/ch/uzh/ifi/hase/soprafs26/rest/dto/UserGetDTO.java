@@ -8,6 +8,12 @@ public class UserGetDTO {
 	private String name;
 	private String username;
 	private UserStatus status;
+	private Integer level;
+    private Integer health;
+    private Integer strength;
+    private Integer intelligence;
+    private Integer resilience;
+
 
 	public Long getId() {
 		return id;
@@ -40,4 +46,44 @@ public class UserGetDTO {
 	public void setStatus(UserStatus status) {
 		this.status = status;
 	}
+
+	    public Integer getLevel() { 
+        return level; 
+    }
+
+    public void setLevel(Integer level) { 
+        this.level = level; 
+    }   
+
+    public Integer getHealth() { 
+        return health; 
+    }
+
+    public void setHealth(Integer health) { 
+        this.health = health; 
+    }   
+
+    public Integer getStrength() { 
+        return strength; 
+    }
+
+    public void setStrength(Integer strength) { 
+        this.strength = strength; 
+    }   
+
+    public Integer getIntelligence() { 
+        return intelligence; 
+    }
+
+    public void setIntelligence(Integer intelligence) { 
+        this.intelligence = intelligence; 
+    }   
+
+    public Integer getResilience() { 
+        return resilience; 
+    }
+
+    public void setResilience(Integer resilience) { 
+        this.resilience = resilience; 
+    }   
 }

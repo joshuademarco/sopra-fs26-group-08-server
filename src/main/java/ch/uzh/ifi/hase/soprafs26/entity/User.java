@@ -38,6 +38,22 @@ public class User implements Serializable {
 	@Column(nullable = false)
 	private UserStatus status;
 
+	@Column(nullable = false)
+    private Integer level = 1;
+
+    @Column(nullable = false)
+    private Integer health = 10;
+
+    @Column(nullable = false)
+    private Integer strength = 1;
+
+    @Column(nullable = false)
+    private Integer intelligence = 1;
+
+    @Column(nullable = false)
+    private Integer resilience = 1;
+
+
 	public Long getId() {
 		return id;
 	}
@@ -77,4 +93,44 @@ public class User implements Serializable {
 	public void setStatus(UserStatus status) {
 		this.status = status;
 	}
+
+	public Integer getLevel() { 
+        return level; 
+    }
+
+    public void setLevel(Integer level) { 
+        this.level = level; 
+    }   
+
+    public Integer getHealth() { 
+        return health; 
+    }
+
+    public void setHealth(Integer health) { 
+        this.health = health; 
+    }   
+
+    public Integer getStrength() { 
+        return strength; 
+    }
+
+    public void setStrength(Integer strength) { 
+        this.strength = strength; 
+    }   
+
+    public Integer getIntelligence() { 
+        return intelligence; 
+    }
+
+    public void setIntelligence(Integer intelligence) { 
+        this.intelligence = intelligence; 
+    }   
+
+    public Integer getResilience() { 
+        return resilience; 
+    }
+
+    public void setResilience(Integer resilience) { 
+        this.resilience = resilience; 
+    }   
 }
