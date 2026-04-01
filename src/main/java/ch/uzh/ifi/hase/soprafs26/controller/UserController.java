@@ -12,6 +12,7 @@ import ch.uzh.ifi.hase.soprafs26.service.UserService;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.validation.Valid;
 /**
  * User Controller
  * This class is responsible for handling all REST request that are related to
@@ -46,7 +47,7 @@ public class UserController {
 	@PostMapping("/users")
 	@ResponseStatus(HttpStatus.CREATED)
 	@ResponseBody
-	public UserGetDTO createUser(@RequestBody UserPostDTO userPostDTO) {
+	public UserGetDTO createUser(@Valid @RequestBody UserPostDTO userPostDTO) {
 		// convert API user to internal representation
 		User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
 
