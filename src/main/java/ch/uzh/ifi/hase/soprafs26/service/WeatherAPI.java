@@ -39,4 +39,22 @@ public class WeatherAPI {
 
         return weatherCode;
     }
+
+    public double getMultiplier(int weatherCode, String category) {
+        if (category.equals("outdoor")) {
+            if (weatherCode <= 3) return 1.0;
+            else if (weatherCode <= 48) return 1.2;
+            else if (weatherCode <= 67) return 1.5;
+            else if (weatherCode <= 77) return 1.8;
+            else return 2.0;
+        }
+        else if (category.equals("indoor")) {
+            if (weatherCode <= 3) return 1.8;
+            else if (weatherCode <= 48) return 1.6;
+            else if (weatherCode <= 67) return 1.4;
+            else if (weatherCode <= 77) return 1.2;
+            else return 1.0;
+        }
+        return 1.0;
+    }
 }
