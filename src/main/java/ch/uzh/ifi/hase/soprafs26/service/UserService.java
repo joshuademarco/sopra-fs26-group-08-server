@@ -93,14 +93,23 @@ public class UserService {
 		if (user == null || !user.getPassword().equals(password)) {
 			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
 		}
-
-		user.setStatus(UserStatus.ONLINE);
-		user.setOnline(true);
-		userRepository.saveAndFlush(user);
 		return user;
 	}
 
-	public void logout(String token) {
+	public User getUserByToken(String token) {
+		if (token == null || token.isBlank()) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing Token");
+		}
+
+		User user = userRepository.findByToken(token);
+		if (user == null) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid Token");
+		}
+
+		return user;
+	}
+
+	public User logout(String token) {
 		User user = userRepository.findByToken(token);
 		if (user == null) {
 			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid Token");
@@ -110,5 +119,7 @@ public class UserService {
 		user.setOnline(false);
 		user.setToken(UUID.randomUUID().toString());
 		userRepository.saveAndFlush(user);
+		return user;
+
 	}
 }

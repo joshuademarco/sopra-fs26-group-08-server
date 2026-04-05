@@ -5,6 +5,7 @@ import ch.uzh.ifi.hase.soprafs26.rest.dto.LoginPostDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.mapper.DTOMapper;
+import ch.uzh.ifi.hase.soprafs26.service.LiveService;
 import ch.uzh.ifi.hase.soprafs26.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
@@ -21,9 +22,11 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
 	private final UserService userService;
+	private final LiveService presenceService;
 
-	AuthController(UserService userService) {
+	AuthController(UserService userService, LiveService liveService) {
 		this.userService = userService;
+		this.presenceService = liveService;
 	}
 
 	@PostMapping("/register")
@@ -51,11 +54,21 @@ public class AuthController {
 				.body(userGetDTO);
 	}
 
+	@GetMapping("/me")
+	public ResponseEntity<UserGetDTO> me(@RequestHeader(name = "token", required = false) String tokenHeader,
+			@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String authorizationHeader) {
+		String token = resolveToken(tokenHeader, authorizationHeader);
+		User user = userService.getUserByToken(token);
+		UserGetDTO userGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
+		return ResponseEntity.ok(userGetDTO);
+	}
+
 	@PostMapping("/logout")
 	public ResponseEntity<Void> logout(@RequestHeader(name = "token", required = false) String tokenHeader,
 			@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String authorizationHeader) {
 		String token = resolveToken(tokenHeader, authorizationHeader);
-		userService.logout(token);
+		User loggedOutUser = userService.logout(token);
+		presenceService.disconnectUser(loggedOutUser.getId());
 		return ResponseEntity.noContent().build();
 	}
 
