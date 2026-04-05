@@ -1,8 +1,7 @@
 package ch.uzh.ifi.hase.soprafs26.entity;
 
-import jakarta.persistence.*;
-
 import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
+import jakarta.persistence.*;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -51,6 +50,21 @@ public class User implements Serializable {
 
     @Column(nullable = false)
     private boolean online;
+
+    @Column(nullable = false)
+    private Integer level = 1;
+
+    @Column(nullable = false)
+    private Integer health = 1;
+
+    @Column(nullable = false)
+    private Integer strength = 1;
+
+    @Column(nullable = false)
+    private Integer intelligence = 1;
+
+    @Column(nullable = false)
+    private Integer resilience = 1;
 
     @PrePersist
     protected void onCreate() {
@@ -136,5 +150,45 @@ public class User implements Serializable {
     public void setOnline(boolean online) {
         this.online = online;
         this.status = online ? UserStatus.ONLINE : UserStatus.OFFLINE;
+    }
+
+    public Integer getLevel() {
+        return level;
+    }
+
+    public void setLevel(Integer level) {
+        this.level = level;
+    }
+
+    public Integer getHealth() {
+        return health;
+    }
+
+    public void setHealth(Integer health) {
+        this.health = health;
+    }
+
+    public Integer getStrength() {
+        return strength;
+    }
+
+    public void setStrength(Integer strength) {
+        this.strength = strength;
+    }
+
+    public Integer getIntelligence() {
+        return intelligence;
+    }
+
+    public void setIntelligence(Integer intelligence) {
+        this.intelligence = intelligence;
+    }
+
+    public Integer getResilience() {
+        return resilience;
+    }
+
+    public void setResilience(Integer resilience) {
+        this.resilience = resilience;
     }
 }

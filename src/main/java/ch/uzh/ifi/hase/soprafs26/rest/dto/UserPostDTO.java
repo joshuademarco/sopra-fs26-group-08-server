@@ -1,19 +1,23 @@
 package ch.uzh.ifi.hase.soprafs26.rest.dto;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
+import org.hibernate.annotations.processing.Pattern;
+
+import jakarta.validation.constraints.*;
 
 public class UserPostDTO {
 
-	@NotBlank
-	@Email
+	@NotBlank(message = "Username can't be blank")
+	@Size(min = 2, message = "Username must be at least 2 characters long")
+	private String username;
+
+	@NotBlank(message = "Email can't be blank")
+	@Email(message = "Email should be a valid email")
 	private String email;
 
-	@NotBlank
+	@NotBlank(message = "Password can't be blank")
+	@Size(min = 8, message = "Password must be at least 8 characters long")
+	@Pattern(regexp = ".*[0-9].*", message = "Password must contain at least one number")
 	private String password;
-
-	@NotBlank
-	private String username;
 
 	public String getEmail() {
 		return email;

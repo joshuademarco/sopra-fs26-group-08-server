@@ -14,6 +14,7 @@ import ch.uzh.ifi.hase.soprafs26.repository.UserRepository;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.Optional;
 
 /**
  * User Service
@@ -34,6 +35,19 @@ public class UserService {
 		this.userRepository = userRepository;
 	}
 
+	public User getUserById(Long id) {
+        // Find the user in the database
+        Optional<User> userById = userRepository.findById(id);
+
+        // If not found, throw a 404 error so the frontend knows what happened
+        if (userById.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, 
+                String.format("User with ID %d was not found!", id));
+        }
+
+        return userById.get();
+    }
+
 	public List<User> getUsers() {
 		return this.userRepository.findAll();
 	}
@@ -43,6 +57,9 @@ public class UserService {
 		newUser.setStatus(UserStatus.OFFLINE);
 		newUser.setOnline(false);
 		checkIfUserExists(newUser);
+
+		//TODO: hash the password before saving it in the database!
+
 		// saves the given entity but data is only persisted in the database once
 		// flush() is called
 		newUser = userRepository.save(newUser);
