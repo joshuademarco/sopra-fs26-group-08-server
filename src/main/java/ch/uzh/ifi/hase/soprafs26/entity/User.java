@@ -1,10 +1,10 @@
 package ch.uzh.ifi.hase.soprafs26.entity;
 
+import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
 import jakarta.persistence.*;
 
-import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
-
 import java.io.Serializable;
+import java.time.Instant;
 
 /**
  * Internal User Representation
@@ -20,33 +20,42 @@ import java.io.Serializable;
 @Table(name = "users")
 public class User implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	@Id
-	@GeneratedValue
-	private Long id;
+    @Id
+    @GeneratedValue
+    private Long id;
 
+    @Column(nullable = false, unique = true)
+    private String username;
 
-	@Column(nullable = false, unique = true)
-	private String username;
+    @Column(nullable = false, unique = true)
+    private String email;
 
-	@Column(nullable = false, unique = true)
-	private String email;
+    @Column(nullable = false)
+    private String password;
 
-	@Column(nullable = false)
-	private String password;
+    @Column(nullable = false, unique = true)
+    private String token;
 
-	@Column(nullable = false, unique = true)
-	private String token;
+    @Column(nullable = false)
+    private Instant createdAt;
 
-	@Column(nullable = false)
-	private UserStatus status;
+    @Column(nullable = false)
+    private Instant updatedAt;
 
-	@Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserStatus status;
+
+    @Column(nullable = false)
+    private boolean online;
+
+    @Column(nullable = false)
     private Integer level = 1;
 
     @Column(nullable = false)
-    private Integer health = 10;
+    private Integer health = 1;
 
     @Column(nullable = false)
     private Integer strength = 1;
@@ -57,92 +66,129 @@ public class User implements Serializable {
     @Column(nullable = false)
     private Integer resilience = 1;
 
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public String getUsername() {
-		return username;
-	}
-
-	public void setUsername(String username) {
-		this.username = username;
-	}
-
-	public String getEmail() {
-		return email;
-	}
-
-	public void setEmail(String email) {
-		this.email = email;
-	}
-
-	public String getPassword() {
-		return password;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
-	}
-
-	public String getToken() {
-		return token;
-	}
-
-	public void setToken(String token) {
-		this.token = token;
-	}
-
-	public UserStatus getStatus() {
-		return status;
-	}
-
-	public void setStatus(UserStatus status) {
-		this.status = status;
-	}
-
-	public Integer getLevel() { 
-        return level; 
+    @PrePersist
+    protected void onCreate() {
+        Instant now = Instant.now();
+        this.createdAt = now;
+        this.updatedAt = now;
     }
 
-    public void setLevel(Integer level) { 
-        this.level = level; 
-    }   
-
-    public Integer getHealth() { 
-        return health; 
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = Instant.now();
     }
 
-    public void setHealth(Integer health) { 
-        this.health = health; 
-    }   
-
-    public Integer getStrength() { 
-        return strength; 
+    public Long getId() {
+        return id;
     }
 
-    public void setStrength(Integer strength) { 
-        this.strength = strength; 
-    }   
-
-    public Integer getIntelligence() { 
-        return intelligence; 
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public void setIntelligence(Integer intelligence) { 
-        this.intelligence = intelligence; 
-    }   
-
-    public Integer getResilience() { 
-        return resilience; 
+    public String getUsername() {
+        return username;
     }
 
-    public void setResilience(Integer resilience) { 
-        this.resilience = resilience; 
-    }   
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public UserStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(UserStatus status) {
+        this.status = status;
+        this.online = status == UserStatus.ONLINE;
+    }
+
+    public boolean isOnline() {
+        return online;
+    }
+
+    public void setOnline(boolean online) {
+        this.online = online;
+        this.status = online ? UserStatus.ONLINE : UserStatus.OFFLINE;
+    }
+
+    public Integer getLevel() {
+        return level;
+    }
+
+    public void setLevel(Integer level) {
+        this.level = level;
+    }
+
+    public Integer getHealth() {
+        return health;
+    }
+
+    public void setHealth(Integer health) {
+        this.health = health;
+    }
+
+    public Integer getStrength() {
+        return strength;
+    }
+
+    public void setStrength(Integer strength) {
+        this.strength = strength;
+    }
+
+    public Integer getIntelligence() {
+        return intelligence;
+    }
+
+    public void setIntelligence(Integer intelligence) {
+        this.intelligence = intelligence;
+    }
+
+    public Integer getResilience() {
+        return resilience;
+    }
+
+    public void setResilience(Integer resilience) {
+        this.resilience = resilience;
+    }
 }

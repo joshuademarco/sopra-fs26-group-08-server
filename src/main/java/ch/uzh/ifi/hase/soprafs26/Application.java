@@ -17,19 +17,17 @@ public class Application {
 		SpringApplication.run(Application.class, args);
 	}
 
-	@GetMapping(value = "/", produces = MediaType.TEXT_PLAIN_VALUE)
-	@ResponseStatus(HttpStatus.OK)
-	@ResponseBody
-	public String helloWorld() {
-		return "The application is running.";
-	}
 
 	@Bean
 	public WebMvcConfigurer corsConfigurer() {
 		return new WebMvcConfigurer() {
 			@Override
 			public void addCorsMappings(CorsRegistry registry) {
-				registry.addMapping("/**").allowedOrigins("*").allowedMethods("*");
+				registry.addMapping("/**")
+						.allowedOrigins("*")
+						.allowedMethods("*")
+						.allowedHeaders("*")
+						.exposedHeaders("Set-Authorization");
 			}
 		};
 	}

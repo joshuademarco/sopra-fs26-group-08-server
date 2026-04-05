@@ -54,7 +54,8 @@ public class UserService {
 
 	public User createUser(User newUser) {
 		newUser.setToken(UUID.randomUUID().toString());
-		newUser.setStatus(UserStatus.ONLINE);
+		newUser.setStatus(UserStatus.OFFLINE);
+		newUser.setOnline(false);
 		checkIfUserExists(newUser);
 
 		//TODO: hash the password before saving it in the database!
@@ -82,14 +83,32 @@ public class UserService {
 		User userByUsername = userRepository.findByUsername(userToBeCreated.getUsername());
 		User userByEmail = userRepository.findByEmail(userToBeCreated.getEmail());
 
-		String baseErrorMessage = "The %s provided %s not unique. Therefore, the user could not be created!";
-		if (userByUsername != null && userByEmail != null) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-					String.format(baseErrorMessage, "username and email", "are"));
-		} else if (userByUsername != null) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format(baseErrorMessage, "username", "is"));
-		} else if (userByEmail != null) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format(baseErrorMessage, "email", "is"));
+		if (userByUsername != null || userByEmail != null) {
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "Username or email already exists");
 		}
+	}
+
+	public User login(String email, String password) {
+		User user = userRepository.findByEmail(email);
+		if (user == null || !user.getPassword().equals(password)) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
+		}
+
+		user.setStatus(UserStatus.ONLINE);
+		user.setOnline(true);
+		userRepository.saveAndFlush(user);
+		return user;
+	}
+
+	public void logout(String token) {
+		User user = userRepository.findByToken(token);
+		if (user == null) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid Token");
+		}
+
+		user.setStatus(UserStatus.OFFLINE);
+		user.setOnline(false);
+		user.setToken(UUID.randomUUID().toString());
+		userRepository.saveAndFlush(user);
 	}
 }
