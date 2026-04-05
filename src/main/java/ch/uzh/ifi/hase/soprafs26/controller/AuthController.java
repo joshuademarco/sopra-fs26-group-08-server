@@ -8,8 +8,10 @@ import ch.uzh.ifi.hase.soprafs26.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs26.service.LiveService;
 import ch.uzh.ifi.hase.soprafs26.service.UserService;
 import jakarta.validation.Valid;
+import java.time.Duration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,7 +42,7 @@ public class AuthController {
 		// convert internal representation of user back to API
 		UserGetDTO userGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser);
 		return ResponseEntity.status(HttpStatus.CREATED)
-				.header("Set-Authorization", createdUser.getToken())
+				.header(HttpHeaders.SET_COOKIE, createAuthCookie(createdUser.getToken()).toString())
 				.body(userGetDTO);
 	}
 
@@ -50,29 +52,55 @@ public class AuthController {
 		UserGetDTO userGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(loggedInUser);
 
 		return ResponseEntity.ok()
-				.header("Set-Authorization", loggedInUser.getToken())
+				.header(HttpHeaders.SET_COOKIE, createAuthCookie(loggedInUser.getToken()).toString())
 				.body(userGetDTO);
 	}
 
 	@GetMapping("/me")
-	public ResponseEntity<UserGetDTO> me(@RequestHeader(name = "token", required = false) String tokenHeader,
+	public ResponseEntity<UserGetDTO> me(@CookieValue(name = "token", required = false) String tokenCookie,
+			@RequestHeader(name = "token", required = false) String tokenHeader,
 			@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String authorizationHeader) {
-		String token = resolveToken(tokenHeader, authorizationHeader);
+		String token = resolveToken(tokenCookie, tokenHeader, authorizationHeader);
 		User user = userService.getUserByToken(token);
 		UserGetDTO userGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
 		return ResponseEntity.ok(userGetDTO);
 	}
 
 	@PostMapping("/logout")
-	public ResponseEntity<Void> logout(@RequestHeader(name = "token", required = false) String tokenHeader,
+	public ResponseEntity<Void> logout(@CookieValue(name = "token", required = false) String tokenCookie,
+			@RequestHeader(name = "token", required = false) String tokenHeader,
 			@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String authorizationHeader) {
-		String token = resolveToken(tokenHeader, authorizationHeader);
+		String token = resolveToken(tokenCookie, tokenHeader, authorizationHeader);
 		User loggedOutUser = userService.logout(token);
 		presenceService.disconnectUser(loggedOutUser.getId());
-		return ResponseEntity.noContent().build();
+		return ResponseEntity.noContent()
+				.header(HttpHeaders.SET_COOKIE, clearAuthCookie().toString())
+				.build();
 	}
 
-	private String resolveToken(String tokenHeader, String authorizationHeader) {
+	private ResponseCookie createAuthCookie(String token) {
+		return ResponseCookie.from("token", token)
+				.httpOnly(true)
+				.sameSite("Lax")
+				.path("/")
+				.maxAge(Duration.ofDays(7))
+				.build();
+	}
+
+	private ResponseCookie clearAuthCookie() {
+		return ResponseCookie.from("token", "")
+				.httpOnly(true)
+				.sameSite("Lax")
+				.path("/")
+				.maxAge(0)
+				.build();
+	}
+
+	private String resolveToken(String tokenCookie, String tokenHeader, String authorizationHeader) {
+		if (tokenCookie != null && !tokenCookie.isBlank()) {
+			return tokenCookie;
+		}
+
 		if (tokenHeader != null && !tokenHeader.isBlank()) {
 			return tokenHeader;
 		}
