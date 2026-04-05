@@ -54,8 +54,8 @@ public class UserService {
 
 	public User createUser(User newUser) {
 		newUser.setToken(UUID.randomUUID().toString());
-		newUser.setStatus(UserStatus.OFFLINE);
-		newUser.setOnline(false);
+		newUser.setStatus(UserStatus.ONLINE);
+		newUser.setOnline(true);
 		checkIfUserExists(newUser);
 
 		//TODO: hash the password before saving it in the database!

@@ -5,6 +5,10 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "habits")
 public class Habit {
+    @Id
+    @GeneratedValue
+    private Long id;
+
     private String userId; 
     
     private String name; 
@@ -23,6 +27,9 @@ public class Habit {
     public Float calculateXP() {
         return 420.0f; 
     }
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
     //getters and setters
     public String getUserId() { return userId; }
