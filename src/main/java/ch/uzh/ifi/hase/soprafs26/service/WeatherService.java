@@ -11,11 +11,11 @@ import org.json.*;
 
 
 @Service
-public class WeatherAPI {
+public class WeatherService {
     //private String apiKey;
     private String baseUrl;
 
-    public WeatherAPI() {
+    public WeatherService() {
         //this.apiKey = "";
         this.baseUrl = "https://api.open-meteo.com/v1/forecast?latitude=47.3769&longitude=8.5417&current=temperature_2m,weather_code&timezone=Europe%2FZurich";
     }
