@@ -1,7 +1,10 @@
 package ch.uzh.ifi.hase.soprafs26.entity;
 
+
 import jakarta.persistence.*;
-import java.util.Date;
+import java.time.Instant;
+
+import ch.uzh.ifi.hase.soprafs26.constant.HabitCategory;
 
 
 @MappedSuperclass 
@@ -11,25 +14,31 @@ public abstract class Task {
     @GeneratedValue
     private Long id;
 
+    @Column(nullable = false)
     private String title;
-    private String description;
     
-    private String category; //physical, cognitive, emotional
-    private String type;     
+    //physical, cognitive or emotional
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private HabitCategory category;     
     
-    private Float weight;
+    @Column(nullable = false)
     private Boolean completed = false;
-    private Date completedAt;
-    private Date createdAt = new Date();
 
-    //basic methods for now from diagram
-    public void complete() {
-        this.completed = true;
-        this.completedAt = new Date();
+    private Instant completedAt; //null until completed
+
+    @Column(nullable = false, updatable = false)
+    private Instant createdAt;
+
+    @PrePersist //works with @MappedSuperclass to set createdAt for all subclasses
+    protected void onCreate() {
+        this.createdAt = Instant.now();
     }
 
-    public Float calculateXP() {
-        return 0.0f; 
+    //mark task as done
+    public void complete() {
+        this.completed = true;
+        this.completedAt = Instant.now();
     }
 
     //getters and setters
@@ -39,24 +48,15 @@ public abstract class Task {
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
-
-    public String getType() { return type; }
-    public void setType(String type) { this.type = type; }
-
-    public Float getWeight() { return weight; }
-    public void setWeight(Float weight) { this.weight = weight; }
+    public HabitCategory getCategory() { return category; }
+    public void setCategory(HabitCategory category) { this.category = category; }
 
     public Boolean getCompleted() { return completed; }
     public void setCompleted(Boolean completed) { this.completed = completed; }
 
-    public Date getCompletedAt() { return completedAt; }
-    public void setCompletedAt(Date completedAt) { this.completedAt = completedAt; }
+    public Instant getCompletedAt() { return completedAt; }
+    public void setCompletedAt(Instant completedAt) { this.completedAt = completedAt; }
 
-    public Date getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
+    public Instant getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
 }

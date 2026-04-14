@@ -1,47 +1,52 @@
 package ch.uzh.ifi.hase.soprafs26.entity;
 
 import jakarta.persistence.*;
+import java.time.Instant;
+
+import ch.uzh.ifi.hase.soprafs26.constant.HabitFrequency;
 
 @Entity
 @Table(name = "habits")
-public class Habit {
-    @Id
-    @GeneratedValue
-    private Long id;
-
-    private String userId; 
+public class Habit extends Task{
     
-    private String name; 
-    private String resetSchedule; 
+    //user can have multiple habits
+    @ManyToOne(fetch = FetchType.LAZY) //load the related entity only when accessed
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+ 
+    @Column(nullable = false)
+    private Boolean positive = true;
+
+    //daily, weekly or monthly
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private HabitFrequency frequency;
+    
+    @Column(nullable = false)
     private Integer streak = 0;
 
-    
-    public void logCompletion() {
-        this.streak += 1;
-    }
+    private Instant dueAt;
 
-    public String getProgress() {
-        return "0%"; 
-    }
+    private Instant lastCompletedAt;
 
-    public Float calculateXP() {
-        return 420.0f; 
-    }
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
 
     //getters and setters
-    public String getUserId() { return userId; }
-    public void setUserId(String userId) { this.userId = userId; }
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public Boolean getPositive() { return positive; }
+    public void setPositive(Boolean positive) { this.positive = positive; }
 
-    public String getResetSchedule() { return resetSchedule; }
-    public void setResetSchedule(String resetSchedule) { this.resetSchedule = resetSchedule; }
+    public HabitFrequency getFrequency() { return frequency; }
+    public void setFrequency(HabitFrequency frequency) { this.frequency = frequency; }
 
     public Integer getStreak() { return streak; }
     public void setStreak(Integer streak) { this.streak = streak; }
+
+    public Instant getDueAt() { return dueAt; }
+    public void setDueAt(Instant dueAt) { this.dueAt = dueAt; }
+
+    public Instant getLastCompletedAt() { return lastCompletedAt; }
+    public void setLastCompletedAt(Instant lastCompletedAt) { this.lastCompletedAt = lastCompletedAt; }
 }
 
