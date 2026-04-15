@@ -1,5 +1,7 @@
 package ch.uzh.ifi.hase.soprafs26.controller;
 
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,11 +15,11 @@ public class HabitController {
         this.habitService = habitService;
     }
 
-    @GetMapping("/weather")
+    @GetMapping("api/weather")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public int getWeather() throws Exception {
+    public Map<String, Integer> MapgetWeather() throws Exception {
         int weatherCode = habitService.getWeatherCode();
-        return weatherCode;
+        return Map.of("weatherCode", weatherCode);
     }
 }
