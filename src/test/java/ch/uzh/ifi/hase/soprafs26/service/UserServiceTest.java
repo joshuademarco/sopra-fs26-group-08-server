@@ -10,6 +10,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
+import ch.uzh.ifi.hase.soprafs26.repository.CharacterRepository;
 import ch.uzh.ifi.hase.soprafs26.repository.UserRepository;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -18,6 +19,9 @@ public class UserServiceTest {
 
 	@Mock
 	private UserRepository userRepository;
+
+	@Mock
+	private CharacterRepository characterRepository;
 
 	@InjectMocks
 	private UserService userService;
@@ -38,6 +42,8 @@ public class UserServiceTest {
 		// when -> any object is being save in the userRepository -> return the dummy
 		// testUser
 		Mockito.when(userRepository.save(Mockito.any())).thenReturn(testUser);
+		Mockito.when(characterRepository.save(Mockito.any())).thenReturn(null); 
+
 	}
 
 	@Test
