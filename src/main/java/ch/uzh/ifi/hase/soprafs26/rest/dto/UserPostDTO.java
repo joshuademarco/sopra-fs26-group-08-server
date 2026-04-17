@@ -19,7 +19,7 @@ public class UserPostDTO {
 	@Size(min = 8, message = "Password must be at least 8 characters long")
 	@Pattern(regexp = ".*[0-9].*", message = "Password must contain at least one number")
 	private String password;
-
+	
 	public String getEmail() {
 		return email;
 	}
@@ -27,6 +27,7 @@ public class UserPostDTO {
 	public void setEmail(String email) {
 		this.email = email;
 	}
+
 
 	public String getPassword() {
 		return password;

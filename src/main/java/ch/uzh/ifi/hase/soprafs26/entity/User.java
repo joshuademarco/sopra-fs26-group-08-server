@@ -1,21 +1,22 @@
 package ch.uzh.ifi.hase.soprafs26.entity;
 
-import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
-import jakarta.persistence.*;
-
 import java.io.Serializable;
 import java.time.Instant;
 
-/**
- * Internal User Representation
- * This class composes the internal representation of the user and defines how
- * the user is stored in the database.
- * Every variable will be mapped into a database field with the @Column
- * annotation
- * - nullable = false -> this cannot be left empty
- * - unique = true -> this value must be unqiue across the database -> composes
- * the primary key
- */
+import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
+
 @Entity
 @Table(name = "users")
 public class User implements Serializable {
@@ -51,20 +52,8 @@ public class User implements Serializable {
     @Column(nullable = false)
     private boolean online;
 
-    @Column(nullable = false)
-    private Integer level = 1;
-
-    @Column(nullable = false)
-    private Integer health = 1;
-
-    @Column(nullable = false)
-    private Integer strength = 1;
-
-    @Column(nullable = false)
-    private Integer intelligence = 1;
-
-    @Column(nullable = false)
-    private Integer resilience = 1;
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Character character;
 
     @PrePersist
     protected void onCreate() {
@@ -75,6 +64,13 @@ public class User implements Serializable {
 
     @PreUpdate
     protected void onUpdate() {
+        this.updatedAt = Instant.now();
+    }
+
+    public void updateProfile(String username, String email) {
+
+        this.username = username;
+        this.email = email;
         this.updatedAt = Instant.now();
     }
 
@@ -152,43 +148,11 @@ public class User implements Serializable {
         this.status = online ? UserStatus.ONLINE : UserStatus.OFFLINE;
     }
 
-    public Integer getLevel() {
-        return level;
+    public Character getCharacter() { 
+        return character; 
     }
 
-    public void setLevel(Integer level) {
-        this.level = level;
-    }
-
-    public Integer getHealth() {
-        return health;
-    }
-
-    public void setHealth(Integer health) {
-        this.health = health;
-    }
-
-    public Integer getStrength() {
-        return strength;
-    }
-
-    public void setStrength(Integer strength) {
-        this.strength = strength;
-    }
-
-    public Integer getIntelligence() {
-        return intelligence;
-    }
-
-    public void setIntelligence(Integer intelligence) {
-        this.intelligence = intelligence;
-    }
-
-    public Integer getResilience() {
-        return resilience;
-    }
-
-    public void setResilience(Integer resilience) {
-        this.resilience = resilience;
+    public void setCharacter(Character character) { 
+        this.character = character; 
     }
 }

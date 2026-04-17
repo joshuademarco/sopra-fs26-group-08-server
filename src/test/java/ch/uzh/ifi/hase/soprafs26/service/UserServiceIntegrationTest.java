@@ -1,5 +1,9 @@
 package ch.uzh.ifi.hase.soprafs26.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,8 +15,6 @@ import org.springframework.web.server.ResponseStatusException;
 import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.repository.UserRepository;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test class for the UserResource REST resource.
@@ -68,9 +70,9 @@ public class UserServiceIntegrationTest {
 
 		// attempt to create second user with same username
 		User testUser2 = new User();
-
 		// change the email but forget about the username
 		testUser2.setEmail("testemail2@uzh.ch");
+
 		testUser2.setPassword("password123");
 		testUser2.setUsername("testUsername");
 

@@ -1,23 +1,31 @@
 package ch.uzh.ifi.hase.soprafs26.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import org.mockito.MockitoAnnotations;
 import org.springframework.web.server.ResponseStatusException;
 
 import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
+import ch.uzh.ifi.hase.soprafs26.entity.Character;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.repository.UserRepository;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class UserServiceTest {
 
 	@Mock
 	private UserRepository userRepository;
+
+	@Mock
+    private CharacterService characterService;
 
 	@InjectMocks
 	private UserService userService;
@@ -31,13 +39,14 @@ public class UserServiceTest {
 		// given
 		testUser = new User();
 		testUser.setId(1L);
+		testUser.setUsername("testUsername");
 		testUser.setEmail("testemail@uzh.ch");
 		testUser.setPassword("password123");
-		testUser.setUsername("testUsername");
 
 		// when -> any object is being save in the userRepository -> return the dummy
 		// testUser
-		Mockito.when(userRepository.save(Mockito.any())).thenReturn(testUser);
+		Mockito.when(characterService.createCharacter(any())).thenReturn(new Character());
+        Mockito.when(userRepository.save(any())).thenReturn(testUser);
 	}
 
 	@Test
@@ -47,7 +56,8 @@ public class UserServiceTest {
 		User createdUser = userService.createUser(testUser);
 
 		// then
-		Mockito.verify(userRepository, Mockito.times(1)).save(Mockito.any());
+		verify(userRepository, times(1)).save(any());
+        verify(characterService, times(1)).createCharacter(any());
 
 		assertEquals(testUser.getId(), createdUser.getId());
 		assertEquals(testUser.getEmail(), createdUser.getEmail());
