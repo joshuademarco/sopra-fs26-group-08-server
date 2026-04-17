@@ -44,7 +44,7 @@ public class HabitController {
 
         List<Habit> habits = habitService.getHabitsForUser(userId);
 
-        return habits
+        return habits.stream()
                 .map(DTOMapper.INSTANCE::convertEntityToHabitGetDTO)
                 .collect(Collectors.toList());
     }
@@ -52,7 +52,7 @@ public class HabitController {
     @PostMapping("/users/{userId}/habits")
     @ResponseStatus(HttpStatus.CREATED)
     public HabitGetDTO createHabit(@PathVariable Long userId, @Valid @RequestBody HabitPostDTO habitPostDTO,
-            @CookieValue(name = "token", required = false) String token) {
+            @CookieValue(name = "token", required = true) String token) {
         User requestingUser = userService.getUserByToken(token);
         verifyOwnership(requestingUser.getId(), userId);
 
