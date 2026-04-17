@@ -57,6 +57,9 @@ public class Character implements Serializable {
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
 
+    public Character() {
+    }
+
     @PrePersist
     protected void onCreate() {
         this.updatedAt = Instant.now();
@@ -86,39 +89,97 @@ public class Character implements Serializable {
         this.health = Math.min(this.maxHealth, this.health + amount);
     }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() { 
+        return id; 
+    }
 
-    public Integer getLevel() { return level; }
-    public void setLevel(Integer level) { this.level = level; }
+    public void setId(Long id) { 
+        this.id = id; 
+    }
 
-    public Integer getHealth() { return health; }
-    public void setHealth(Integer health) { this.health = health; }
+    public Integer getLevel() { 
+        return level; 
+    }
 
-    public Integer getMaxHealth() { return maxHealth; }
-    public void setMaxHealth(Integer maxHealth) { this.maxHealth = maxHealth; }
+    public void setLevel(Integer level) { 
+        this.level = level; 
+    }
 
-    public Integer getExperience() { return experience; }
-    public void setExperience(Integer experience) { this.experience = experience; }
+    public Integer getHealth() { 
+        return health; 
+    }
 
-    public Integer getStrength() { return strength; }
-    public void setStrength(Integer strength) { this.strength = strength; }
+    public void setHealth(Integer health) { 
+        this.health = health; 
+    }
 
-    public Integer getResilience() { return resilience; }
-    public void setResilience(Integer resilience) { this.resilience = resilience; }
+    public Integer getMaxHealth() { 
+        return maxHealth; 
+    }
 
-    public Integer getIntelligence() { return intelligence; }
-    public void setIntelligence(Integer intelligence) { this.intelligence = intelligence; }
+    public void setMaxHealth(Integer maxHealth) { 
+        this.maxHealth = maxHealth; 
+    }
 
-    public String getSkinColor() { return skinColor; }
-    public void setSkinColor(String skinColor) { this.skinColor = skinColor; }
+    public Integer getExperience() { 
+        return experience; 
+    }
 
-    public String getType() { return type; }
-    public void setType(String type) { this.type = type; }
+    public void setExperience(Integer experience) { 
+        this.experience = experience; 
+    }
 
-    public Instant getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
+    public Integer getStrength() { 
+        return strength; 
+    }
+    public void setStrength(Integer strength) { 
+        this.strength = strength; 
+    }
 
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
+    public Integer getResilience() { 
+        return resilience; 
+    
+    }
+    public void setResilience(Integer resilience) { 
+        this.resilience = resilience; 
+    }
+
+    public Integer getIntelligence() { 
+        return intelligence; 
+    }
+
+    public void setIntelligence(Integer intelligence) { 
+        this.intelligence = intelligence; 
+    }
+
+    public String getSkinColor() { 
+        return skinColor; 
+    }
+
+    public void setSkinColor(String skinColor) { 
+        this.skinColor = skinColor; 
+    }
+
+    public String getType() { 
+        return type; 
+    }
+
+    public void setType(String type) { 
+        this.type = type; 
+    }
+
+    public Instant getUpdatedAt() { 
+        return updatedAt; 
+    }
+    public void setUpdatedAt(Instant updatedAt) { 
+        this.updatedAt = updatedAt; 
+    }
+
+    public User getUser() { 
+        return user; 
+    
+    }
+    public void setUser(User user) { 
+        this.user = user; 
+    }
 }

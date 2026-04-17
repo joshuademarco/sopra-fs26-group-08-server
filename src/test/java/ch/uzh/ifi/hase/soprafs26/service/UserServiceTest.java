@@ -17,6 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs26.entity.Character;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
+import ch.uzh.ifi.hase.soprafs26.repository.CharacterRepository;
 import ch.uzh.ifi.hase.soprafs26.repository.UserRepository;
 
 public class UserServiceTest {
@@ -26,6 +27,9 @@ public class UserServiceTest {
 
 	@Mock
     private CharacterService characterService;
+
+	@Mock
+	private CharacterRepository characterRepository;
 
 	@InjectMocks
 	private UserService userService;

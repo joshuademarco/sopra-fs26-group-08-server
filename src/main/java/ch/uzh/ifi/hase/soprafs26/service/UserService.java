@@ -16,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs26.entity.Character;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
+import ch.uzh.ifi.hase.soprafs26.repository.CharacterRepository;
 import ch.uzh.ifi.hase.soprafs26.repository.UserRepository;
 
 /**
@@ -31,15 +32,18 @@ public class UserService {
 
 	private final Logger log = LoggerFactory.getLogger(UserService.class);
 	private final UserRepository userRepository;
+	private final CharacterRepository characterRepository;
 	private final CharacterService characterService;
 
-	@Autowired 
+	@Autowired
     public UserService(@Qualifier("userRepository") UserRepository userRepository, 
-                       CharacterService characterService) {
+                       CharacterService characterService,
+                       CharacterRepository characterRepository) { 
         this.userRepository = userRepository;
         this.characterService = characterService;
-    }
-
+        this.characterRepository = characterRepository;
+					   }
+					   
 	public User getUserById(Long id) {
         // Find the user in the database
         Optional<User> userById = userRepository.findById(id);
@@ -70,8 +74,9 @@ public class UserService {
 		newUser = userRepository.save(newUser);
 		userRepository.flush();
 
+		//create a character for the new user
 		Character newCharacter = characterService.createCharacter(newUser);
-		newUser.setCharacter(newCharacter);
+        newUser.setCharacter(newCharacter);
 
 		log.debug("Created Information for User: {}", newUser);
 		return newUser;

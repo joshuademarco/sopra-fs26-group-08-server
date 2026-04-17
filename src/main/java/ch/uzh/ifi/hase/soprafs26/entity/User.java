@@ -39,6 +39,10 @@ public class User implements Serializable {
     @Column(nullable = false, unique = true)
     private String token;
 
+    //cascade -> when a user is deleted, the related character is also deleted
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Character character;
+
     @Column(nullable = false)
     private Instant createdAt;
 
@@ -51,9 +55,6 @@ public class User implements Serializable {
 
     @Column(nullable = false)
     private boolean online;
-
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Character character;
 
     @PrePersist
     protected void onCreate() {
