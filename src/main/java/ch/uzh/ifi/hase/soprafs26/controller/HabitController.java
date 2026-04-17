@@ -38,13 +38,13 @@ public class HabitController {
     @GetMapping("/users/{userId}/habits")
     @ResponseStatus(HttpStatus.OK)
     public List<HabitGetDTO> getHabits(@PathVariable Long userId,
-            @CookieValue(name = "token", required = false) String token) {
+            @CookieValue(name = "token", required = true) String token) {
         User requestingUser = userService.getUserByToken(token);
         verifyOwnership(requestingUser.getId(), userId);
 
         List<Habit> habits = habitService.getHabitsForUser(userId);
 
-        return habits.stream()
+        return habits
                 .map(DTOMapper.INSTANCE::convertEntityToHabitGetDTO)
                 .collect(Collectors.toList());
     }
@@ -65,7 +65,7 @@ public class HabitController {
     @PutMapping("/users/{userId}/habits/{habitId}/complete")
     @ResponseStatus(HttpStatus.OK)
     public HabitGetDTO completeHabit(@PathVariable Long userId, @PathVariable Long habitId,
-            @CookieValue(name = "token", required = false) String token) {
+            @CookieValue(name = "token", required = true) String token) {
         User requestingUser = userService.getUserByToken(token);
         verifyOwnership(requestingUser.getId(), userId);
 
@@ -76,7 +76,7 @@ public class HabitController {
     @DeleteMapping("/users/{userId}/habits/{habitId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteHabit(@PathVariable Long userId, @PathVariable Long habitId,
-            @CookieValue(name = "token", required = false) String token) {
+            @CookieValue(name = "token", required = true) String token) {
         User requestingUser = userService.getUserByToken(token);
         verifyOwnership(requestingUser.getId(), userId);
 
