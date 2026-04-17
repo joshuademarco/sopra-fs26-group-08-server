@@ -8,6 +8,7 @@ public class HabitGetDTO {
 
     private Long id;
     private String title;
+    private String description;
     private HabitCategory category;
     private HabitFrequency frequency;
     private Boolean positive;
@@ -16,35 +17,102 @@ public class HabitGetDTO {
     private Instant dueAt;
     private Instant createdAt;
     private Instant completedAt;
+    private Integer weight;
 
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    //getters and setters
+    public Long getId() {
+        return id;
+    }
 
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public HabitCategory getCategory() { return category; }
-    public void setCategory(HabitCategory category) { this.category = category; }
+    public String getTitle() {
+        return title;
+    }
 
-    public HabitFrequency getFrequency() { return frequency; }
-    public void setFrequency(HabitFrequency frequency) { this.frequency = frequency; }
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
-    public Boolean getPositive() { return positive; }
-    public void setPositive(Boolean positive) { this.positive = positive; }
+    public String getDescription() {
+        return description;
+    }
 
-    public Boolean getCompleted() { return completed; }
-    public void setCompleted(Boolean completed) { this.completed = completed; }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-    public Integer getStreak() { return streak; }
-    public void setStreak(Integer streak) { this.streak = streak; }
+    public HabitCategory getCategory() {
+        return category;
+    }
 
-    public Instant getDueAt() { return dueAt; }
-    public void setDueAt(Instant dueAt) { this.dueAt = dueAt; }
+    public void setCategory(HabitCategory category) {
+        this.category = category;
+    }
 
-    public Instant getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+    public HabitFrequency getFrequency() {
+        return frequency;
+    }
 
-    public Instant getCompletedAt() { return completedAt; }
-    public void setCompletedAt(Instant completedAt) { this.completedAt = completedAt; }
+    public void setFrequency(HabitFrequency frequency) {
+        this.frequency = frequency;
+    }
+
+    public Boolean getPositive() {
+        return positive;
+    }
+
+    public void setPositive(Boolean positive) {
+        this.positive = positive;
+    }
+
+    public Boolean getCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(Boolean completed) {
+        this.completed = completed;
+    }
+
+    public Integer getStreak() {
+        return streak;
+    }
+
+    public void setStreak(Integer streak) {
+        this.streak = streak;
+    }
+
+    public Instant getDueAt() {
+        return dueAt;
+    }
+
+    public void setDueAt(Instant dueAt) {
+        this.dueAt = dueAt;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Instant getCompletedAt() {
+        return completedAt;
+    }
+
+    public void setCompletedAt(Instant completedAt) {
+        this.completedAt = completedAt;
+    }
+
+    public Integer getWeight() {
+        return weight;
+    }
+
+    public void setWeight(Integer weight) {
+        this.weight = weight;
+    }
 }

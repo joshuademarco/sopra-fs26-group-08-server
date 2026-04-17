@@ -35,24 +35,23 @@ public interface DTOMapper {
 	@Mapping(source = "email", target = "email")
 	@Mapping(source = "username", target = "username")
 	@Mapping(source = "status", target = "status")
-    @Mapping(source = "level", target = "level")
-    @Mapping(source = "health", target = "health")
-    @Mapping(source = "strength", target = "strength")
-    @Mapping(source = "intelligence", target = "intelligence")
-    @Mapping(source = "resilience", target = "resilience")
 	UserGetDTO convertEntityToUserGetDTO(User user);
 
 	@Mapping(source = "title", target = "title")
+	@Mapping(source = "description", target = "description")
 	@Mapping(source = "category", target = "category")
+	@Mapping(source = "weight", target = "weight")
 	@Mapping(source = "frequency", target = "frequency")
 	@Mapping(source = "positive", target = "positive")
 	Habit convertHabitPostDTOtoEntity(HabitPostDTO habitPostDTO);
 
 	@Mapping(source = "id", target = "id")
 	@Mapping(source = "title", target = "title")
+	@Mapping(source = "description", target = "description")
 	@Mapping(source = "category", target = "category")
 	@Mapping(source = "frequency", target = "frequency")
 	@Mapping(source = "positive", target = "positive")
+	@Mapping(source = "weight", target = "weight")
 	@Mapping(source = "completed", target = "completed")
 	@Mapping(source = "streak", target = "streak")
 	@Mapping(source = "dueAt", target = "dueAt")

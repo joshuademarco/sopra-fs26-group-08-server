@@ -1,13 +1,11 @@
 package ch.uzh.ifi.hase.soprafs26.entity;
 
-
 import jakarta.persistence.*;
 import java.time.Instant;
 
 import ch.uzh.ifi.hase.soprafs26.constant.HabitCategory;
 
-
-@MappedSuperclass 
+@MappedSuperclass
 public abstract class Task {
 
     @Id
@@ -16,47 +14,101 @@ public abstract class Task {
 
     @Column(nullable = false)
     private String title;
-    
-    //physical, cognitive or emotional
+
+    // optional
+    private String description;
+
+    // physical, cognitive or emotional
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private HabitCategory category;     
-    
+    private HabitCategory category;
+
     @Column(nullable = false)
     private Boolean completed = false;
 
-    private Instant completedAt; //null until completed
+    private Instant completedAt; // null until completed
+
+    // difficulty level -> 1 = easy, 2 = medium, 3 = hard
+    // default is 1 (easy), cant be null for xp calculations
+    @Column(nullable = false)
+    private Integer weight = 1;
 
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
-    @PrePersist //works with @MappedSuperclass to set createdAt for all subclasses
+    @PrePersist // works with @MappedSuperclass to set createdAt for all subclasses
     protected void onCreate() {
         this.createdAt = Instant.now();
     }
 
-    //mark task as done
+    // mark task as done
     public void complete() {
         this.completed = true;
         this.completedAt = Instant.now();
     }
 
-    //getters and setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    // getters and setters
+    public Long getId() {
+        return id;
+    }
 
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public HabitCategory getCategory() { return category; }
-    public void setCategory(HabitCategory category) { this.category = category; }
+    public String getTitle() {
+        return title;
+    }
 
-    public Boolean getCompleted() { return completed; }
-    public void setCompleted(Boolean completed) { this.completed = completed; }
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
-    public Instant getCompletedAt() { return completedAt; }
-    public void setCompletedAt(Instant completedAt) { this.completedAt = completedAt; }
+    public String getDescription() {
+        return description;
+    }
 
-    public Instant getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public HabitCategory getCategory() {
+        return category;
+    }
+
+    public void setCategory(HabitCategory category) {
+        this.category = category;
+    }
+
+    public Boolean getCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(Boolean completed) {
+        this.completed = completed;
+    }
+
+    public Instant getCompletedAt() {
+        return completedAt;
+    }
+
+    public void setCompletedAt(Instant completedAt) {
+        this.completedAt = completedAt;
+    }
+
+    public Integer getWeight() {
+        return weight;
+    }
+
+    public void setWeight(Integer weight) {
+        this.weight = weight;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
 }
