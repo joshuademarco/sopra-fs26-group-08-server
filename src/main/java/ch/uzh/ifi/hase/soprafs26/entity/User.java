@@ -1,20 +1,30 @@
 package ch.uzh.ifi.hase.soprafs26.entity;
 
-import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
-import jakarta.persistence.*;
-
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+
+import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
 
 /**
  * Internal User Representation
  * This class composes the internal representation of the user and defines how
  * the user is stored in the database.
- * Every variable will be mapped into a database field with the @Column
- * annotation
- * - nullable = false -> this cannot be left empty
- * - unique = true -> this value must be unqiue across the database -> composes
- * the primary key
  */
 @Entity
 @Table(name = "users")
@@ -51,20 +61,15 @@ public class User implements Serializable {
     @Column(nullable = false)
     private boolean online;
 
-    @Column(nullable = false)
-    private Integer level = 1;
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private Character character;
 
-    @Column(nullable = false)
-    private Integer health = 1;
+    @ManyToOne
+    @JoinColumn(name = "group_id")
+    private Group group;
 
-    @Column(nullable = false)
-    private Integer strength = 1;
-
-    @Column(nullable = false)
-    private Integer intelligence = 1;
-
-    @Column(nullable = false)
-    private Integer resilience = 1;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Habit> habits = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {
@@ -78,64 +83,63 @@ public class User implements Serializable {
         this.updatedAt = Instant.now();
     }
 
-    public Long getId() {
-        return id;
+    public Long getId() { 
+        return id; }
+
+    public void setId(Long id) { 
+        this.id = id; 
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public String getUsername() { 
+        return username; 
     }
 
-    public String getUsername() {
-        return username;
+    public void setUsername(String username) { 
+        this.username = username; 
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public String getEmail() { 
+        return email; 
     }
 
-    public String getEmail() {
-        return email;
+    public void setEmail(String email) { 
+        this.email = email; 
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public String getPassword() { 
+        return password; 
     }
 
-    public String getPassword() {
-        return password;
+    public void setPassword(String password) { 
+        this.password = password; 
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public String getToken() { 
+        return token; 
     }
 
-    public String getToken() {
-        return token;
+    public void setToken(String token) { 
+        this.token = token; 
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    public Instant getCreatedAt() { 
+        return createdAt; 
     }
 
-    public Instant getCreatedAt() {
-        return createdAt;
+    public void setCreatedAt(Instant createdAt) { 
+        this.createdAt = createdAt; 
     }
 
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
+    public Instant getUpdatedAt() { 
+        return updatedAt; 
     }
 
-    public Instant getUpdatedAt() {
-        return updatedAt;
+    public void setUpdatedAt(Instant updatedAt) { 
+        this.updatedAt = updatedAt; 
     }
 
-    public void setUpdatedAt(Instant updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public UserStatus getStatus() {
-        return status;
+    public UserStatus getStatus() { 
+        return status; 
     }
 
     public void setStatus(UserStatus status) {
@@ -143,8 +147,8 @@ public class User implements Serializable {
         this.online = status == UserStatus.ONLINE;
     }
 
-    public boolean isOnline() {
-        return online;
+    public boolean isOnline() { 
+        return online; 
     }
 
     public void setOnline(boolean online) {
@@ -152,43 +156,27 @@ public class User implements Serializable {
         this.status = online ? UserStatus.ONLINE : UserStatus.OFFLINE;
     }
 
-    public Integer getLevel() {
-        return level;
+    public Character getCharacter() { 
+        return character; 
+    
+    }
+    public void setCharacter(Character character) { 
+        this.character = character; 
     }
 
-    public void setLevel(Integer level) {
-        this.level = level;
+    public Group getGroup() { 
+        return group; 
     }
 
-    public Integer getHealth() {
-        return health;
+    public void setGroup(Group group) { 
+        this.group = group; 
     }
 
-    public void setHealth(Integer health) {
-        this.health = health;
+    public List<Habit> getHabits() { 
+        return habits; 
     }
 
-    public Integer getStrength() {
-        return strength;
-    }
-
-    public void setStrength(Integer strength) {
-        this.strength = strength;
-    }
-
-    public Integer getIntelligence() {
-        return intelligence;
-    }
-
-    public void setIntelligence(Integer intelligence) {
-        this.intelligence = intelligence;
-    }
-
-    public Integer getResilience() {
-        return resilience;
-    }
-
-    public void setResilience(Integer resilience) {
-        this.resilience = resilience;
+    public void setHabits(List<Habit> habits) { 
+        this.habits = habits; 
     }
 }
