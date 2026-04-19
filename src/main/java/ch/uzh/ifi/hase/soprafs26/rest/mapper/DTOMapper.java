@@ -62,6 +62,7 @@ public interface DTOMapper {
     @Mapping(source = "skinColor", target = "skinColor")
     @Mapping(source = "type", target = "type")
     CharacterGetDTO convertEntityToCharacterGetDTO(Character character);
+<<<<<<< Updated upstream
 
     @Mapping(source = "title", target = "title")
     @Mapping(source = "description", target = "description")
@@ -85,3 +86,6 @@ public interface DTOMapper {
     @Mapping(source = "completedAt", target = "completedAt")
     HabitGetDTO convertEntityToHabitGetDTO(Habit habit);
 }
+=======
+}
+>>>>>>> Stashed changes
