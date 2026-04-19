@@ -88,4 +88,12 @@ if (secretPropsFile.exists()) {
     }
 }
 
+bootRun {
+    ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'].each { key ->
+        if (project.hasProperty(key)) {
+            systemProperty key, project.property(key)
+        }
+    }
+}
+
 defaultTasks 'bootJar', 'build'
