@@ -1,13 +1,14 @@
 package ch.uzh.ifi.hase.soprafs26.rest.mapper;
 
-import org.mapstruct.*;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 import org.mapstruct.factory.Mappers;
 
 import ch.uzh.ifi.hase.soprafs26.entity.Character;
 import ch.uzh.ifi.hase.soprafs26.entity.Group;
 import ch.uzh.ifi.hase.soprafs26.entity.Habit;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
-
 import ch.uzh.ifi.hase.soprafs26.rest.dto.CharacterGetDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.GroupGetDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.GroupPostDTO;
@@ -23,40 +24,38 @@ import ch.uzh.ifi.hase.soprafs26.rest.dto.UserPostDTO;
  * of an entity (e.g., the User) to the external/API representation (e.g.,
  * UserGetDTO for getting, UserPostDTO for creating)
  * and vice versa.
- * Additional mappers can be defined for new entities.
- * Always created one mapper for getting information (GET) and one mapper for
- * creating information (POST).
  */
-@Mapper
+@Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface DTOMapper {
 
-	DTOMapper INSTANCE = Mappers.getMapper(DTOMapper.class);
+    DTOMapper INSTANCE = Mappers.getMapper(DTOMapper.class);
 
-	@Mapping(source = "email", target = "email")
-	@Mapping(source = "password", target = "password")
-	@Mapping(source = "username", target = "username")
-	User convertUserPostDTOtoEntity(UserPostDTO userPostDTO);
+    @Mapping(source = "email", target = "email")
+    @Mapping(source = "password", target = "password")
+    @Mapping(source = "username", target = "username")
+    User convertUserPostDTOtoEntity(UserPostDTO userPostDTO);
 
-	@Mapping(source = "id", target = "id")
+    @Mapping(source = "id", target = "id")
     @Mapping(source = "email", target = "email")
     @Mapping(source = "username", target = "username")
     @Mapping(source = "status", target = "status")
     UserGetDTO convertEntityToUserGetDTO(User user);
 
-	@Mapping(source = "name", target = "name")
+    @Mapping(source = "name", target = "name")
     @Mapping(source = "description", target = "description")
     Group convertGroupPostDTOtoEntity(GroupPostDTO groupPostDTO);
 
-	@Mapping(source = "id", target = "id")
+    @Mapping(source = "id", target = "id")
     @Mapping(source = "name", target = "name")
     @Mapping(source = "description", target = "description")
     GroupGetDTO convertEntityToGroupGetDTO(Group group);
 
-	@Mapping(source = "id", target = "id")
+    @Mapping(source = "id", target = "id")
     @Mapping(source = "level", target = "level")
     @Mapping(source = "health", target = "health")
     @Mapping(source = "maxHealth", target = "maxHealth")
-    @Mapping(source = "experience", target = "experience")
+    @Mapping(source = "xp", target = "xp") 
+    @Mapping(source = "xpToNextLevel", target = "xpToNextLevel") 
     @Mapping(source = "strength", target = "strength")
     @Mapping(source = "resilience", target = "resilience")
     @Mapping(source = "intelligence", target = "intelligence")
@@ -64,7 +63,7 @@ public interface DTOMapper {
     @Mapping(source = "type", target = "type")
     CharacterGetDTO convertEntityToCharacterGetDTO(Character character);
 
-	@Mapping(source = "title", target = "title")
+    @Mapping(source = "title", target = "title")
     @Mapping(source = "description", target = "description")
     @Mapping(source = "category", target = "category")
     @Mapping(source = "weight", target = "weight")
@@ -72,7 +71,7 @@ public interface DTOMapper {
     @Mapping(source = "positive", target = "positive")
     Habit convertHabitPostDTOtoEntity(HabitPostDTO habitPostDTO);
 
-	@Mapping(source = "id", target = "id")
+    @Mapping(source = "id", target = "id")
     @Mapping(source = "title", target = "title")
     @Mapping(source = "description", target = "description")
     @Mapping(source = "category", target = "category")

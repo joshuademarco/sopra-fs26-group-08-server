@@ -5,7 +5,8 @@ public class CharacterGetDTO {
     private Integer level;
     private Integer health;
     private Integer maxHealth;
-    private Integer experience;
+    private Integer xp;
+    private Integer xpToNextLevel;
     private Integer strength;
     private Integer resilience;
     private Integer intelligence;
@@ -42,12 +43,20 @@ public class CharacterGetDTO {
         this.maxHealth = maxHealth; 
     }
 
-    public Integer getExperience() { 
-        return experience; 
+    public Integer getXp() { 
+        return xp; 
     }
 
-    public void setExperience(Integer experience) { 
-        this.experience = experience; 
+    public void setXp(Integer xp) { 
+        this.xp = xp; 
+    }
+
+    public Integer getXpToNextLevel() { 
+        return xpToNextLevel; 
+    }
+
+    public void setXpToNextLevel(Integer xpToNextLevel) { 
+        this.xpToNextLevel = xpToNextLevel; 
     }
 
     public Integer getStrength() { 

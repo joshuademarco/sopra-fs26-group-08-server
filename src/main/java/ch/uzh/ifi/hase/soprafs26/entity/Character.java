@@ -5,7 +5,9 @@ import java.time.Instant;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
@@ -20,29 +22,36 @@ public class Character implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @OneToOne(fetch = FetchType.LAZY) // one character per user
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    private User user;
 
     @Column(nullable = false)
     private Integer level = 1;
 
     @Column(nullable = false)
-    private Integer health = 10;
+    private Integer health = 100;
 
     @Column(nullable = false)
-    private Integer maxHealth = 10;
+    private Integer maxHealth = 100;
 
     @Column(nullable = false)
-    private Integer experience = 0;
+    private Integer xp = 0;
+
+    @Column(nullable = false)
+    private Integer xpToNextLevel = 100;
 
     @Column(nullable = false)
     private Integer strength = 1;
 
     @Column(nullable = false)
-    private Integer resilience = 1;
+    private Integer intelligence = 1;
 
     @Column(nullable = false)
-    private Integer intelligence = 1;
+    private Integer resilience = 1;
 
     @Column
     private String skinColor;
@@ -52,10 +61,6 @@ public class Character implements Serializable {
 
     @Column(nullable = false)
     private Instant updatedAt;
-
-    @OneToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id", unique = true)
-    private User user;
 
     @PrePersist
     protected void onCreate() {
@@ -67,11 +72,11 @@ public class Character implements Serializable {
         this.updatedAt = Instant.now();
     }
 
-    public void addExperience(Integer amount) {
-        this.experience += amount;
-        if (this.experience >= 100) {
+    public void addXp(Integer amount) {
+        this.xp += amount;
+        if (this.xp >= this.xpToNextLevel) {
             this.level += 1;
-            this.experience -= 100;
+            this.xp -= this.xpToNextLevel;
             this.maxHealth += 5;
             this.health = this.maxHealth; 
         }
@@ -92,6 +97,14 @@ public class Character implements Serializable {
 
     public void setId(Long id) { 
         this.id = id; 
+    }
+
+    public User getUser() { 
+        return user; 
+    }
+
+    public void setUser(User user) { 
+        this.user = user; 
     }
 
     public Integer getLevel() { 
@@ -118,12 +131,20 @@ public class Character implements Serializable {
         this.maxHealth = maxHealth; 
     }
 
-    public Integer getExperience() { 
-        return experience; 
+    public Integer getXp() { 
+        return xp; 
     }
 
-    public void setExperience(Integer experience) { 
-        this.experience = experience; 
+    public void setXp(Integer xp) { 
+        this.xp = xp; 
+    }
+
+    public Integer getXpToNextLevel() { 
+        return xpToNextLevel; 
+    }
+
+    public void setXpToNextLevel(Integer xpToNextLevel) { 
+        this.xpToNextLevel = xpToNextLevel; 
     }
 
     public Integer getStrength() { 
@@ -134,20 +155,20 @@ public class Character implements Serializable {
         this.strength = strength; 
     }
 
-    public Integer getResilience() { 
-        return resilience; 
-    }
-
-    public void setResilience(Integer resilience) { 
-        this.resilience = resilience; 
-    }
-
     public Integer getIntelligence() { 
         return intelligence; 
     }
 
     public void setIntelligence(Integer intelligence) { 
         this.intelligence = intelligence; 
+    }
+
+    public Integer getResilience() { 
+        return resilience; 
+    }
+
+    public void setResilience(Integer resilience) { 
+        this.resilience = resilience; 
     }
 
     public String getSkinColor() { 
@@ -172,12 +193,5 @@ public class Character implements Serializable {
 
     public void setUpdatedAt(Instant updatedAt) { 
         this.updatedAt = updatedAt; 
-    }
-
-    public User getUser() { 
-        return user; 
-    }
-    public void setUser(User user) { 
-        this.user = user; 
     }
 }

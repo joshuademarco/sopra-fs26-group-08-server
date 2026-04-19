@@ -11,6 +11,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -61,7 +62,8 @@ public class User implements Serializable {
     @Column(nullable = false)
     private boolean online;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    // cascade -> when a user is deleted, the related character is also deleted
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Character character;
 
     @ManyToOne
@@ -84,7 +86,8 @@ public class User implements Serializable {
     }
 
     public Long getId() { 
-        return id; }
+        return id; 
+    }
 
     public void setId(Long id) { 
         this.id = id; 
@@ -147,10 +150,7 @@ public class User implements Serializable {
         this.online = status == UserStatus.ONLINE;
     }
 
-    public boolean isOnline() { 
-        return online; 
-    }
-
+    public boolean isOnline() { return online; }
     public void setOnline(boolean online) {
         this.online = online;
         this.status = online ? UserStatus.ONLINE : UserStatus.OFFLINE;
@@ -158,8 +158,8 @@ public class User implements Serializable {
 
     public Character getCharacter() { 
         return character; 
-    
     }
+
     public void setCharacter(Character character) { 
         this.character = character; 
     }
