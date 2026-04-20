@@ -106,6 +106,9 @@ public class UserService {
 		if (user == null || !user.getPassword().equals(password)) {
 			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
 		}
+		user.setStatus(UserStatus.ONLINE);
+		user.setOnline(true);
+		userRepository.saveAndFlush(user);
 		return user;
 	}
 

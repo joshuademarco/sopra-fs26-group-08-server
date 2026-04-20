@@ -53,6 +53,7 @@ public class AuthController {
     public ResponseEntity<UserGetDTO> login(@Valid @RequestBody LoginPostDTO loginPostDTO,
             HttpServletRequest request) {
         User loggedInUser = userService.login(loginPostDTO.getEmail(), loginPostDTO.getPassword());
+        presenceService.broadcastSnapshot();
         UserGetDTO userGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(loggedInUser);
 
         return ResponseEntity.ok()
