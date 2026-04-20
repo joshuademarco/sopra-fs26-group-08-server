@@ -12,6 +12,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
@@ -67,6 +69,10 @@ public class User implements Serializable {
     protected void onUpdate() {
         this.updatedAt = Instant.now();
     }
+
+    @ManyToOne
+    @JoinColumn(name = "group_id")
+    private Group group;
 
     public void updateProfile(String username, String email) {
 
@@ -155,5 +161,13 @@ public class User implements Serializable {
 
     public void setCharacter(Character character) { 
         this.character = character; 
+    }
+
+    public Group getGroup() {
+        return group;
+    }
+
+    public void setGroup(Group group) {
+        this.group = group;
     }
 }

@@ -6,9 +6,12 @@ import org.mapstruct.ReportingPolicy;
 import org.mapstruct.factory.Mappers;
 
 import ch.uzh.ifi.hase.soprafs26.entity.Character;
+import ch.uzh.ifi.hase.soprafs26.entity.Group;
 import ch.uzh.ifi.hase.soprafs26.entity.Habit;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
-import ch.uzh.ifi.hase.soprafs26.rest.dto.CharacterGetDTO; 
+import ch.uzh.ifi.hase.soprafs26.rest.dto.CharacterGetDTO;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.GroupGetDTO;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.GroupPostDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.HabitGetDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.HabitPostDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UserGetDTO;
@@ -76,4 +79,13 @@ public interface DTOMapper {
 	@Mapping(source = "createdAt", target = "createdAt")
 	@Mapping(source = "completedAt", target = "completedAt")
 	HabitGetDTO convertEntityToHabitGetDTO(Habit habit);
+
+	@Mapping(source = "name", target = "name")
+    @Mapping(source = "description", target = "description")
+    Group convertGroupPostDTOtoEntity(GroupPostDTO groupPostDTO);
+
+	@Mapping(source = "id", target = "id")
+    @Mapping(source = "name", target = "name")
+    @Mapping(source = "description", target = "description")
+    GroupGetDTO convertEntityToGroupGetDTO(Group group);
 }
