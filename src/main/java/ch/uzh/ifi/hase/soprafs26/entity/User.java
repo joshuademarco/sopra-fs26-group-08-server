@@ -1,21 +1,24 @@
 package ch.uzh.ifi.hase.soprafs26.entity;
 
-import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
-import jakarta.persistence.*;
-
 import java.io.Serializable;
 import java.time.Instant;
 
-/**
- * Internal User Representation
- * This class composes the internal representation of the user and defines how
- * the user is stored in the database.
- * Every variable will be mapped into a database field with the @Column
- * annotation
- * - nullable = false -> this cannot be left empty
- * - unique = true -> this value must be unqiue across the database -> composes
- * the primary key
- */
+import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
+
 @Entity
 @Table(name = "users")
 public class User implements Serializable {
@@ -67,6 +70,17 @@ public class User implements Serializable {
         this.updatedAt = Instant.now();
     }
 
+    @ManyToOne
+    @JoinColumn(name = "group_id")
+    private Group group;
+
+    public void updateProfile(String username, String email) {
+
+        this.username = username;
+        this.email = email;
+        this.updatedAt = Instant.now();
+    }
+
     public Long getId() {
         return id;
     }
@@ -107,14 +121,6 @@ public class User implements Serializable {
         this.token = token;
     }
 
-    public Character getCharacter() {
-        return character;
-    }
-
-    public void setCharacter(Character character) {
-        this.character = character;
-    }
-
     public Instant getCreatedAt() {
         return createdAt;
     }
@@ -147,5 +153,21 @@ public class User implements Serializable {
     public void setOnline(boolean online) {
         this.online = online;
         this.status = online ? UserStatus.ONLINE : UserStatus.OFFLINE;
+    }
+
+    public Character getCharacter() { 
+        return character; 
+    }
+
+    public void setCharacter(Character character) { 
+        this.character = character; 
+    }
+
+    public Group getGroup() {
+        return group;
+    }
+
+    public void setGroup(Group group) {
+        this.group = group;
     }
 }

@@ -1,7 +1,12 @@
 package ch.uzh.ifi.hase.soprafs26.service;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -9,14 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
-import ch.uzh.ifi.hase.soprafs26.entity.User;
-import ch.uzh.ifi.hase.soprafs26.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs26.entity.Character;
+import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.repository.CharacterRepository;
-
-import java.util.List;
-import java.util.UUID;
-import java.util.Optional;
+import ch.uzh.ifi.hase.soprafs26.repository.UserRepository;
 
 /**
  * User Service
@@ -30,15 +31,19 @@ import java.util.Optional;
 public class UserService {
 
 	private final Logger log = LoggerFactory.getLogger(UserService.class);
-
 	private final UserRepository userRepository;
 	private final CharacterRepository characterRepository;
+	private final CharacterService characterService;
 
-	public UserService(@Qualifier("userRepository") UserRepository userRepository, @Qualifier("characterRepository") CharacterRepository characterRepository) {
-		this.userRepository = userRepository;
-		this.characterRepository = characterRepository;
-	}
-
+	@Autowired
+    public UserService(@Qualifier("userRepository") UserRepository userRepository, 
+                       CharacterService characterService,
+                       CharacterRepository characterRepository) { 
+        this.userRepository = userRepository;
+        this.characterService = characterService;
+        this.characterRepository = characterRepository;
+					   }
+					   
 	public User getUserById(Long id) {
         // Find the user in the database
         Optional<User> userById = userRepository.findById(id);
@@ -70,9 +75,8 @@ public class UserService {
 		userRepository.flush();
 
 		//create a character for the new user
-		Character character = new Character();
-    	character.setUser(newUser);
-    	characterRepository.save(character);
+		Character newCharacter = characterService.createCharacter(newUser);
+        newUser.setCharacter(newCharacter);
 
 		log.debug("Created Information for User: {}", newUser);
 		return newUser;
