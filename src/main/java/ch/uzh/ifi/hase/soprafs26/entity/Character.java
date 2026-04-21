@@ -12,6 +12,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import ch.uzh.ifi.hase.soprafs26.constant.HabitCategory;
 
 @Entity
 @Table(name = "characters")
@@ -72,11 +73,32 @@ public class Character implements Serializable {
 
     public void addExperience(Integer amount) {
         this.experience += amount;
-        if (this.experience >= 100) {
+        // use while loop to handle multiple level-ups
+        while (this.experience >= getXpThreshold()) {
+            this.experience -= getXpThreshold(); // leftover XP after level up
             this.level += 1;
-            this.experience -= 100;
             this.maxHealth += 5;
-            this.health = this.maxHealth; 
+            this.health = this.maxHealth; // restore health on level up
+        }
+    }
+
+    // simple XP progression -> 100XP for level 1, 200XP for level 2 etc.
+    public Integer getXpThreshold() {
+        return 100 * this.level;
+    }
+
+    // update stats based on habit category
+    public void increaseStat(HabitCategory category) {
+        switch (category) {
+            case PHYSICAL:
+                this.strength += 1;
+                break;
+            case COGNITIVE:
+                this.intelligence += 1;
+                break;
+            case EMOTIONAL:
+                this.resilience += 1;
+                break;
         }
     }
 
@@ -89,97 +111,101 @@ public class Character implements Serializable {
         this.health = Math.min(this.maxHealth, this.health + amount);
     }
 
-    public Long getId() { 
-        return id; 
+    public Long getId() {
+        return id;
     }
 
-    public void setId(Long id) { 
-        this.id = id; 
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public Integer getLevel() { 
-        return level; 
+    public Integer getLevel() {
+        return level;
     }
 
-    public void setLevel(Integer level) { 
-        this.level = level; 
+    public void setLevel(Integer level) {
+        this.level = level;
     }
 
-    public Integer getHealth() { 
-        return health; 
+    public Integer getHealth() {
+        return health;
     }
 
-    public void setHealth(Integer health) { 
-        this.health = health; 
+    public void setHealth(Integer health) {
+        this.health = health;
     }
 
-    public Integer getMaxHealth() { 
-        return maxHealth; 
+    public Integer getMaxHealth() {
+        return maxHealth;
     }
 
-    public void setMaxHealth(Integer maxHealth) { 
-        this.maxHealth = maxHealth; 
+    public void setMaxHealth(Integer maxHealth) {
+        this.maxHealth = maxHealth;
     }
 
-    public Integer getExperience() { 
-        return experience; 
+    public Integer getExperience() {
+        return experience;
     }
 
-    public void setExperience(Integer experience) { 
-        this.experience = experience; 
+    public void setExperience(Integer experience) {
+        this.experience = experience;
     }
 
-    public Integer getStrength() { 
-        return strength; 
-    }
-    public void setStrength(Integer strength) { 
-        this.strength = strength; 
+    public Integer getStrength() {
+        return strength;
     }
 
-    public Integer getResilience() { 
-        return resilience; 
-    
-    }
-    public void setResilience(Integer resilience) { 
-        this.resilience = resilience; 
+    public void setStrength(Integer strength) {
+        this.strength = strength;
     }
 
-    public Integer getIntelligence() { 
-        return intelligence; 
+    public Integer getResilience() {
+        return resilience;
+
     }
 
-    public void setIntelligence(Integer intelligence) { 
-        this.intelligence = intelligence; 
+    public void setResilience(Integer resilience) {
+        this.resilience = resilience;
     }
 
-    public String getSkinColor() { 
-        return skinColor; 
+    public Integer getIntelligence() {
+        return intelligence;
     }
 
-    public void setSkinColor(String skinColor) { 
-        this.skinColor = skinColor; 
+    public void setIntelligence(Integer intelligence) {
+        this.intelligence = intelligence;
     }
 
-    public String getType() { 
-        return type; 
+    public String getSkinColor() {
+        return skinColor;
     }
 
-    public void setType(String type) { 
-        this.type = type; 
+    public void setSkinColor(String skinColor) {
+        this.skinColor = skinColor;
     }
 
-    public Instant getUpdatedAt() { 
-        return updatedAt; 
-    }
-    public void setUpdatedAt(Instant updatedAt) { 
-        this.updatedAt = updatedAt; 
+    public String getType() {
+        return type;
     }
 
-    public User getUser() { 
-        return user; 
-    
+    public void setType(String type) {
+        this.type = type;
     }
-    public void setUser(User user) { 
-        this.user = user; 
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public User getUser() {
+        return user;
+
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }
