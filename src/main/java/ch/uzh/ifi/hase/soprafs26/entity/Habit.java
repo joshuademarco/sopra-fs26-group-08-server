@@ -17,7 +17,7 @@ import jakarta.persistence.Table;
 public class Habit extends Task {
 
     // user can have multiple habits
-    @ManyToOne(fetch = FetchType.LAZY) // load the related entity only when accessed
+    @ManyToOne(fetch = FetchType.LAZY) // lazy -> load the related entity only when accessed
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
