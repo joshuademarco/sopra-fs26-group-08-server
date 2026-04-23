@@ -29,7 +29,7 @@ public class GroupController {
 
     @GetMapping("/groups")
     @ResponseStatus(HttpStatus.OK)
-    public List<GroupGetDTO> getGroups(@CookieValue(name = "token", required = false) String tokenCookie) {
+    public List<GroupGetDTO> getGroups(@CookieValue(name = "token", required = true) String tokenCookie) {
         List<Group> groups = groupService.getMyGroups(tokenCookie);
         List<GroupGetDTO> dtos = new ArrayList<>();
     
@@ -41,14 +41,14 @@ public class GroupController {
 
     @PostMapping("/groups")
     @ResponseStatus(HttpStatus.CREATED)
-    public GroupGetDTO createGroup(@RequestBody GroupPostDTO dto, @CookieValue(name = "token", required = false) String tokenCookie) {
+    public GroupGetDTO createGroup(@RequestBody GroupPostDTO dto, @CookieValue(name = "token", required = true) String tokenCookie) {
         Group input = DTOMapper.INSTANCE.convertGroupPostDTOtoEntity(dto);
         return DTOMapper.INSTANCE.convertEntityToGroupGetDTO(groupService.createGroup(input, tokenCookie));
     }
 
     @PostMapping("/groups/join") 
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void joinGroup(@RequestBody GroupJoinDTO dto, @CookieValue(name = "token", required = false) String tokenCookie) {
+    public void joinGroup(@RequestBody GroupJoinDTO dto, @CookieValue(name = "token", required = true) String tokenCookie) {
         groupService.joinGroup(dto.getName(), dto.getPassword(), tokenCookie);
     }
 }
