@@ -3,7 +3,7 @@ package ch.uzh.ifi.hase.soprafs26.rest.dto;
 public class GroupPostDTO {
 
   private String name;
-  private String description;
+  private String password;
 
   public String getName() {
     return name;
@@ -13,11 +13,11 @@ public class GroupPostDTO {
     this.name = name;
   }
 
-  public String getDescription() {
-    return description;
+  public String getPassword() {
+    return password;
   }
 
-  public void setDescription(String description) {
-    this.description = description;
+  public void setPassword(String password) {
+    this.password = password;
   }
 }

@@ -3,6 +3,8 @@ package ch.uzh.ifi.hase.soprafs26.entity;
 import java.io.Serializable;
 import java.time.Instant;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -53,6 +55,7 @@ public class Character implements Serializable {
     @Column(nullable = false)
     private Instant updatedAt;
 
+    @JsonIgnore
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
