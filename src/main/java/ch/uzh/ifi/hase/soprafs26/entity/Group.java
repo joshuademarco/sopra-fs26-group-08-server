@@ -1,36 +1,40 @@
 package ch.uzh.ifi.hase.soprafs26.entity;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "GROUPS")
+@Table(name = "groups")
 public class Group implements Serializable {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "groups_seq")
-  @SequenceGenerator(name = "groups_seq", sequenceName = "groups_seq", allocationSize = 1)
+  @GeneratedValue
   private Long id;
 
   @Column(nullable = false, unique = true)
   private String name;
 
-  @Column
-  private String description;
+  @Column(nullable = false)
+  private String password;
 
-  @OneToMany(mappedBy = "group", cascade = CascadeType.ALL)
-  private List<User> members = new ArrayList<>();
+  @Column
+  private String createdBy;
+
+  @Column
+  private LocalDateTime createdAt;
+
+  @ManyToMany(mappedBy = "groups", fetch = FetchType.EAGER)
+  private Set<User> users = new HashSet<>();
 
   public Long getId() { 
     return id; 
@@ -48,19 +52,47 @@ public class Group implements Serializable {
     this.name = name; 
 }
 
-  public String getDescription() { 
-    return description; 
-}
+  public String getPassword() { 
+    return password; 
+  }
 
-  public void setDescription(String description) { 
-    this.description = description; 
-}
+  public void setPassword(String password) { 
+    this.password = password; 
+  }
+  
+  public String getCreatedBy() { 
+    return createdBy; 
+  }
 
-  public List<User> getMembers() { 
-    return members; 
-}
+  public void setCreatedBy(String createdBy) { 
+    this.createdBy = createdBy; 
+  }
 
-  public void setMembers(List<User> members) { 
-    this.members = members; 
-}
+  public LocalDateTime getCreatedAt() { 
+    return createdAt; 
+  }
+
+  public void setCreatedAt(LocalDateTime createdAt) { 
+    this.createdAt = createdAt; 
+  }
+
+  public Set<User> getUsers() { 
+    return users; 
+  }
+
+  public void setUsers(Set<User> users) { 
+    this.users = users;
+  }
+
+  public void addUser(User user) {
+    this.users.add(user);
+    if (!user.getGroups().contains(this)) {
+      user.getGroups().add(this);
+    }
+  }
+
+  public void removeUser(User user) {
+    this.users.remove(user);
+    user.getGroups().remove(this);
+  }
 }
