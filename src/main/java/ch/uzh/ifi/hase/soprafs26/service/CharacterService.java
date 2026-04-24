@@ -2,7 +2,6 @@ package ch.uzh.ifi.hase.soprafs26.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -21,7 +20,6 @@ public class CharacterService {
     private final Logger log = LoggerFactory.getLogger(CharacterService.class);
     private final CharacterRepository characterRepository;
 
-    @Autowired
     public CharacterService(@Qualifier("characterRepository") CharacterRepository characterRepository) {
         this.characterRepository = characterRepository;
     }
@@ -47,7 +45,7 @@ public class CharacterService {
         return newCharacter;
     }
 
-    //calculate habit XP based on difficulty weight (default 1, min 1)
+    // calculate habit XP based on difficulty weight (default 1, min 1)
     public int calculateBaseXp(Integer weight) {
         if (weight == null || weight < 1)
             return 10;
@@ -58,13 +56,13 @@ public class CharacterService {
         return (int) Math.round(baseXp * multiplier);
     }
 
-    //after completing habti/todo -> award XP and update character
+    // after completing habti/todo -> award XP and update character
     public int awardXp(Long userId, HabitCategory category, int baseXp, double weatherMultiplier) {
         Character character = getCharacterByUserId(userId);
 
         int finalXp = applyWeatherMultiplier(baseXp, weatherMultiplier);
 
-        //level up and stats are handled in Character.java
+        // level up and stats are handled in Character.java
         character.addExperience(finalXp);
         character.increaseStat(category);
 
@@ -76,11 +74,18 @@ public class CharacterService {
         return finalXp;
     }
 
-    //will be useful for frontend to show XP progress towards next level
+    public void applyNegativeHabitPenalty(Long userId, Integer weight) {
+        Character character = getCharacterByUserId(userId);
+        character.applyNegativeHabitPenalty(weight);
+        characterRepository.save(character);
+        log.debug("Applied negative habit penalty (weight={}) to user {}", weight, userId);
+    }
+
+    // will be useful for frontend to show XP progress towards next level
     public int getXpProgressPercent(Long userId) {
         Character character = getCharacterByUserId(userId);
         int threshold = character.getXpThreshold();
-        if (threshold == 0) //avoid division by zero just in case
+        if (threshold == 0) // avoid division by zero just in case
             return 100;
         return (int) ((character.getExperience() * 100.0) / threshold);
     }
