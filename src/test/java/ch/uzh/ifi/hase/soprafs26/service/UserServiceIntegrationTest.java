@@ -19,6 +19,8 @@ import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.repository.CharacterRepository;
 import ch.uzh.ifi.hase.soprafs26.repository.HabitCompletionEventRepository;
 import ch.uzh.ifi.hase.soprafs26.repository.HabitRepository;
+import ch.uzh.ifi.hase.soprafs26.repository.RaidParticipationRepository;
+import ch.uzh.ifi.hase.soprafs26.repository.RaidTaskRepository;
 import ch.uzh.ifi.hase.soprafs26.repository.TodoRepository;
 import ch.uzh.ifi.hase.soprafs26.repository.UserRepository;
 
@@ -48,10 +50,18 @@ public class UserServiceIntegrationTest {
     private HabitRepository habitRepository;
 
 	@Autowired
+    private RaidParticipationRepository raidParticipationRepository;
+
+	@Autowired
+    private RaidTaskRepository raidTaskRepository;
+
+	@Autowired
     private TodoRepository todoRepository;
 
 	@BeforeEach
     public void setup() {
+        raidTaskRepository.deleteAll();
+        raidParticipationRepository.deleteAll();
         habitCompletionEventRepository.deleteAll();
         habitRepository.deleteAll();
         todoRepository.deleteAll();
@@ -61,6 +71,8 @@ public class UserServiceIntegrationTest {
 
 	@AfterEach
     public void teardown() {
+        raidTaskRepository.deleteAll();
+        raidParticipationRepository.deleteAll();
         habitCompletionEventRepository.deleteAll();
         habitRepository.deleteAll();
         todoRepository.deleteAll();
@@ -102,7 +114,7 @@ public class UserServiceIntegrationTest {
 		// attempt to create second user with same username
 		User testUser2 = new User();
 		// change the email but forget about the username
-		testUser2.setEmail("testemail2@uzh.ch");
+		testUser2.setEmail("testemail@uzh.ch");
 
 		testUser2.setPassword("password123");
 		testUser2.setUsername("testUsername");
