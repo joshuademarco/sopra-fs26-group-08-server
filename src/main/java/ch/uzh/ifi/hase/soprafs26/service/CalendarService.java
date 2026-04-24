@@ -171,11 +171,20 @@ public class CalendarService {
                         "Google FreeBusy API error: " + response.statusCode());
             }
 
-            return computeFreeSlots(response.body(), from, to);
+            return computeFreeSlotsFromJson(response.body(), from, to);
 
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Failed to query free/busy data");
         }
+    }
+
+    public List<FreeSlotGetDTO> findGroupFreeSlots(List<Long> userIds, Instant from, Instant to) {
+        List<Instant[]> allBusy = new ArrayList<>();
+        for (Long userId : userIds) {
+            allBusy.addAll(getBusyIntervalsForUser(userId, from, to));
+        }
+        allBusy.sort((a, b) -> a[0].compareTo(b[0]));
+        return computeFreeSlots(allBusy, from, to);
     }
 
     public String getFrontendRedirectUri() {
@@ -276,32 +285,70 @@ public class CalendarService {
         return events;
     }
 
-    /**
-     * maps the free time slots within from - to
-     */
-    private List<FreeSlotGetDTO> computeFreeSlots(String json, Instant from, Instant to) {
+    private List<Instant[]> getBusyIntervalsForUser(Long userId, Instant from, Instant to) {
+        if (calendarTokenRepository.findByUserId(userId).isEmpty()) {
+            return new ArrayList<>();
+        }
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null)
+            return new ArrayList<>();
+
+        CalendarToken token = getValidToken(userId);
+
+        JSONArray items = new JSONArray();
+        JSONObject item = new JSONObject();
+        item.put("id", user.getEmail());
+        items.put(item);
+
+        JSONObject requestBody = new JSONObject();
+        requestBody.put("timeMin", from.toString());
+        requestBody.put("timeMax", to.toString());
+        requestBody.put("items", items);
+
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder().uri(URI.create(GOOGLE_FREEBUSY_URL))
+                    .header("Authorization", "Bearer " + token.getAccessToken())
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(requestBody.toString()))
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() != 200)
+                return new ArrayList<>();
+
+            return extractBusyIntervals(response.body());
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+
+    private List<Instant[]> extractBusyIntervals(String json) {
         JSONObject root = new JSONObject(json);
         JSONObject calendars = root.optJSONObject("calendars");
-
-        List<Instant[]> busyIntervals = new ArrayList<>();
-
-        if (calendars != null) {
-            for (String email : calendars.keySet()) {
-                JSONArray busy = calendars.getJSONObject(email).optJSONArray("busy");
-                if (busy == null)
-                    continue;
-                for (int i = 0; i < busy.length(); i++) {
-                    JSONObject interval = busy.getJSONObject(i);
-                    busyIntervals.add(new Instant[] {
-                            Instant.parse(interval.getString("start")),
-                            Instant.parse(interval.getString("end"))
-                    });
-                }
+        List<Instant[]> intervals = new ArrayList<>();
+        if (calendars == null)
+            return intervals;
+        for (String email : calendars.keySet()) {
+            JSONArray busy = calendars.getJSONObject(email).optJSONArray("busy");
+            if (busy == null)
+                continue;
+            for (int i = 0; i < busy.length(); i++) {
+                JSONObject interval = busy.getJSONObject(i);
+                intervals.add(new Instant[] {
+                        Instant.parse(interval.getString("start")),
+                        Instant.parse(interval.getString("end"))
+                });
             }
         }
+        return intervals;
+    }
 
-        busyIntervals.sort((a, b) -> a[0].compareTo(b[0]));
-
+    /**
+     * Maps the free time slots within [from, to] given a sorted list of busy
+     * intervals.
+     */
+    private List<FreeSlotGetDTO> computeFreeSlots(List<Instant[]> busyIntervals, Instant from, Instant to) {
         List<FreeSlotGetDTO> freeSlots = new ArrayList<>();
         Instant cursor = from;
 
@@ -325,6 +372,16 @@ public class CalendarService {
         }
 
         return freeSlots;
+    }
+
+    /**
+     * Legacy: parses busy intervals from freeBusy JSON then delegates to
+     * computeFreeSlots.
+     */
+    private List<FreeSlotGetDTO> computeFreeSlotsFromJson(String json, Instant from, Instant to) {
+        List<Instant[]> busyIntervals = extractBusyIntervals(json);
+        busyIntervals.sort((a, b) -> a[0].compareTo(b[0]));
+        return computeFreeSlots(busyIntervals, from, to);
     }
 
     private String encode(String value) {
