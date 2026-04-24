@@ -70,10 +70,7 @@ public class UserService {
         newUser.setToken(UUID.randomUUID().toString());
         newUser.setStatus(UserStatus.ONLINE);
         checkIfUserExists(newUser);
-		// hash the password before saving
 		newUser.setPassword(hashPassword(newUser.getPassword()));
-
-        // TODO: hash the password before saving it in the database!
 
         newUser.setHealth(100);
         newUser.setMaxHealth(100);

@@ -53,7 +53,7 @@ public class UserServiceTest {
 
 		// when -> any object is being save in the userRepository -> return the dummy
 		// testUser
-		Mockito.when(characterService.createCharacter(any())).thenReturn(new Character());
+		Mockito.when(characterService.createCharacter(any(), any())).thenReturn(new Character());
         Mockito.when(userRepository.save(any())).thenReturn(testUser);
 	}
 
@@ -65,7 +65,7 @@ public class UserServiceTest {
 
 		// then
 		verify(userRepository, times(1)).save(any());
-        verify(characterService, times(1)).createCharacter(any());
+        verify(characterService, times(1)).createCharacter(any(), any());
 
 		assertEquals(testUser.getId(), createdUser.getId());
 		assertEquals(testUser.getEmail(), createdUser.getEmail());
