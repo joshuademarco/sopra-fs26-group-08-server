@@ -142,4 +142,40 @@ public class CharacterEntityTest {
         character.heal(100); // try to overheal
         assertEquals(character.getMaxHealth(), character.getHealth());
     }
+
+    @Test
+    public void applyNegativeHabitPenalty_weight1_reducesHealthBy1() {
+        character.setHealth(10);
+        character.applyNegativeHabitPenalty(1);
+        assertEquals(9, character.getHealth());
+    }
+
+    @Test
+    public void applyNegativeHabitPenalty_weight2_reducesHealthBy2() {
+        character.setHealth(10);
+        character.applyNegativeHabitPenalty(2);
+        assertEquals(8, character.getHealth());
+    }
+
+    @Test
+    public void applyNegativeHabitPenalty_weight3_reducesHealthBy3() {
+        character.setHealth(10);
+        character.applyNegativeHabitPenalty(3);
+        assertEquals(7, character.getHealth());
+    }
+
+    @Test
+    public void applyNegativeHabitPenalty_healthCannotGoBelowZero() {
+        character.setHealth(1);
+        character.applyNegativeHabitPenalty(3);
+        // character dies and is reset, hence health back to maxHealth=10 instead of -2
+        assertEquals(10, character.getHealth());
+    }
+
+    @Test
+    public void addExperience_levelUp_restoresFullHealth() {
+        character.setHealth(3);
+        character.addExperience(100);
+        assertEquals(character.getMaxHealth(), character.getHealth());
+    }
 }
