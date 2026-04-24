@@ -71,10 +71,10 @@ public class Seeder implements ApplicationRunner {
 
         log.info("Seeding database...");
 
-        User josh = seedUser("josh", "josh@icuzh.ch", "Password123");
-        User ale = seedUser("ale", "ale@icuzh.ch", "Password123");
-        User michi = seedUser("michi", "michi@icuzh.ch", "Password123");
-        User leo = seedUser("leo", "leo@icuzh.ch", "Password123");
+        User josh = seedUser("josh", "josh@icuzh.ch", "Password123", "josh");
+        User ale = seedUser("ale", "ale@icuzh.ch", "Password123", "ale");
+        User michi = seedUser("michi", "michi@icuzh.ch", "Password123", "michi");
+        User leo = seedUser("leo", "leo@icuzh.ch", "Password123", "leo");
 
         for (User user : new User[] { josh, ale, michi, leo }) {
             seedHabits(user);
@@ -100,10 +100,14 @@ public class Seeder implements ApplicationRunner {
     }
 
     private User seedUser(String username, String email, String password) {
-        return seedUser(username, email, password, null);
+        return seedUser(username, email, password, null, null);
     }
 
-    private User seedUser(String username, String email, String password, Group group) {
+    private User seedUser(String username, String email, String password, String characterType) {
+        return seedUser(username, email, password, null, characterType);
+    }
+
+    private User seedUser(String username, String email, String password, Group group, String characterType) {
         User user = new User();
         user.setUsername(username);
         user.setEmail(email);
@@ -113,7 +117,7 @@ public class Seeder implements ApplicationRunner {
             user.addGroup(group);
         }
 
-        return userService.createUser(user);
+        return userService.createUser(user, characterType);
     }
 
     private void seedHabits(User user) {

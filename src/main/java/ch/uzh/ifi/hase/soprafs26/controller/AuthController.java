@@ -40,7 +40,7 @@ public class AuthController {
         User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
 
         // create user
-        User createdUser = userService.createUser(userInput);
+        User createdUser = userService.createUser(userInput, userPostDTO.getType());
 
         // convert internal representation of user back to API
         UserGetDTO userGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser);

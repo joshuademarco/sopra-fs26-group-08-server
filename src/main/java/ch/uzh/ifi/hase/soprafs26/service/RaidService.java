@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import ch.uzh.ifi.hase.soprafs26.constant.RaidStatus;
@@ -233,6 +234,8 @@ public class RaidService {
         return raidParticipationRepository.save(participation);
     }
 
+    // Keep session open due to LAZY relations
+    @Transactional
     public RaidTaskCompletion completeTask(Long raidId, Long taskId, Boolean success, String token) {
         BossRaid raid = bossRaidRepository.findById(raidId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Raid not found"));
@@ -279,6 +282,8 @@ public class RaidService {
         return completion;
     }
 
+    // Keep session open due to LAZY relations; causes LazyInitializationException otherwise
+    @Transactional
     public void expireOverdueTasks() {
         List<BossRaid> activeRaids = bossRaidRepository.findByStatus(RaidStatus.ACTIVE);
         for (BossRaid raid : activeRaids) {
