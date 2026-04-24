@@ -32,6 +32,10 @@ public class GroupService {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Session expired or invalid token.");
     }
 
+    if (groupRepository.findByName(newGroup.getName()) != null) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Group name already exists.");
+    }
+
     newGroup.setCreatedBy(creator.getUsername());
     newGroup.setCreatedAt(LocalDateTime.now());
         
