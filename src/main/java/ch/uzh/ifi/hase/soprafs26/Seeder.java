@@ -55,16 +55,17 @@ public class Seeder implements ApplicationRunner {
 
         log.info("Seeding database...");
 
-        Group group = seedGroup();
-        User josh = seedUser("josh", "josh@icuzh.ch", "Password123", group);
-        User ale = seedUser("ale", "ale@icuzh.ch", "Password123", group);
-        User michi = seedUser("michi", "michi@icuzh.ch", "Password123", null);
-        User leo = seedUser("leo", "leo@icuzh.ch", "Password123", null);
+        User josh = seedUser("josh", "josh@icuzh.ch", "Password123");
+        User ale = seedUser("ale", "ale@icuzh.ch", "Password123");
+        User michi = seedUser("michi", "michi@icuzh.ch", "Password123");
+        User leo = seedUser("leo", "leo@icuzh.ch", "Password123");
 
         for (User user : new User[] { josh, ale, michi, leo }) {
             seedHabits(user);
             seedTodos(user);
         }
+
+        Group group = seedGroup();
 
         log.info("Seeding complete.");
     }
@@ -72,8 +73,13 @@ public class Seeder implements ApplicationRunner {
     private Group seedGroup() {
         Group group = new Group();
         group.setName("Testing Guild");
-        group.setDescription("The starting guild for test users.");
-        return groupService.createGroup(group);
+        group.setPassword("seed1234");
+        User owner = userRepository.findByUsername("josh");
+        return groupService.createGroup(group, owner.getToken());
+    }
+
+    private User seedUser(String username, String email, String password) {
+        return seedUser(username, email, password, null);
     }
 
     private User seedUser(String username, String email, String password, Group group) {
@@ -81,7 +87,11 @@ public class Seeder implements ApplicationRunner {
         user.setUsername(username);
         user.setEmail(email);
         user.setPassword(password);
-        user.setGroup(group);
+
+        if (group != null) {
+            user.addGroup(group);
+        }
+
         return userService.createUser(user);
     }
 
