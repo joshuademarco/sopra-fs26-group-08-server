@@ -1,5 +1,6 @@
 package ch.uzh.ifi.hase.soprafs26.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,4 +13,5 @@ import ch.uzh.ifi.hase.soprafs26.entity.RaidTaskCompletion;
 @Repository
 public interface RaidTaskCompletionRepository extends JpaRepository<RaidTaskCompletion, Long> {
     Optional<RaidTaskCompletion> findByRaidTaskAndParticipation(RaidTask raidTask, RaidParticipation participation);
+    List<RaidTaskCompletion> findByRaidTask(RaidTask raidTask);
 }

@@ -9,9 +9,14 @@ public class RaidTask extends Task {
     @JoinColumn(name = "boss_raid_id", nullable = false)
     private BossRaid raid;
 
-    private String timeLimit;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assigned_user_id")
+    private User assignedUser;
+
+    private Integer timeLimitSeconds;
+    private Integer taskOrder;
     private Integer successfulDamage;
-    private Integer groupDamageOnFailure;
+    private Integer groupDamage;
     private Integer requiredCount;
 
     public BossRaid getRaid() {
@@ -22,12 +27,28 @@ public class RaidTask extends Task {
         this.raid = raid;
     }
 
-    public String getTimeLimit() {
-        return timeLimit;
+    public User getAssignedUser() {
+        return assignedUser;
     }
 
-    public void setTimeLimit(String timeLimit) {
-        this.timeLimit = timeLimit;
+    public void setAssignedUser(User assignedUser) {
+        this.assignedUser = assignedUser;
+    }
+
+    public Integer getTimeLimitSeconds() {
+        return timeLimitSeconds;
+    }
+
+    public void setTimeLimitSeconds(Integer timeLimitSeconds) {
+        this.timeLimitSeconds = timeLimitSeconds;
+    }
+
+    public Integer getTaskOrder() {
+        return taskOrder;
+    }
+
+    public void setTaskOrder(Integer taskOrder) {
+        this.taskOrder = taskOrder;
     }
 
     public Integer getSuccessfulDamage() {
@@ -38,12 +59,12 @@ public class RaidTask extends Task {
         this.successfulDamage = successfulDamage;
     }
 
-    public Integer getGroupDamageOnFailure() {
-        return groupDamageOnFailure;
+    public Integer getGroupDamage() {
+        return groupDamage;
     }
 
-    public void setGroupDamageOnFailure(Integer groupDamageOnFailure) {
-        this.groupDamageOnFailure = groupDamageOnFailure;
+    public void setGroupDamage(Integer groupDamage) {
+        this.groupDamage = groupDamage;
     }
 
     public Integer getRequiredCount() {

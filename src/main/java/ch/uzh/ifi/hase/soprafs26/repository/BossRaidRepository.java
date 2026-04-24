@@ -13,5 +13,6 @@ import ch.uzh.ifi.hase.soprafs26.entity.BossRaid;
 @Repository("bossRaidRepository")
 public interface BossRaidRepository extends JpaRepository<BossRaid, Long> {
     List<BossRaid> findByGroupId(Long groupId);
+    List<BossRaid> findByStatus(RaidStatus status);
     List<BossRaid> findByStatusAndScheduledTimeBefore(RaidStatus status, Instant time);
 }

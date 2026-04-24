@@ -12,9 +12,18 @@ public class RaidScheduler {
         this.raidService = raidService;
     }
 
-    //Every 60 seconds: activate raids whose scheduledTime is in past
-    @Scheduled(fixedDelay = 60 * 1000)
+    @Scheduled(fixedDelay = 5 * 1000)
     public void activateDueRaids() {
         raidService.activateDueRaids();
+    }
+
+    @Scheduled(fixedDelay = 5 * 1000)
+    public void expireActiveRaids() {
+        raidService.expireActiveRaids();
+    }
+
+    @Scheduled(fixedDelay = 5 * 1000)
+    public void expireOverdueTasks() {
+        raidService.expireOverdueTasks();
     }
 }

@@ -1,6 +1,7 @@
 package ch.uzh.ifi.hase.soprafs26.rest.dto;
 
 import java.time.Instant;
+import java.util.List;
 
 import ch.uzh.ifi.hase.soprafs26.constant.RaidStatus;
 
@@ -12,6 +13,11 @@ public class RaidGetDTO {
     private Integer health;
     private Integer maxHealth;
     private Integer durationSeconds;
+    private Instant startedAt;
+    private Long groupId;
+    private String groupName;
+    private List<RaidMemberDTO> users;
+    private List<RaidTaskDTO> tasks;
 
     public Long getId() {
         return id;
@@ -67,5 +73,45 @@ public class RaidGetDTO {
 
     public void setDurationSeconds(Integer durationSeconds) {
         this.durationSeconds = durationSeconds;
+    }
+
+    public Instant getStartedAt() {
+        return startedAt;
+    }
+
+    public void setStartedAt(Instant startedAt) {
+        this.startedAt = startedAt;
+    }
+
+    public Long getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(Long groupId) {
+        this.groupId = groupId;
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
+    }
+
+    public List<RaidMemberDTO> getUsers() {
+        return users;
+    }
+
+    public void setUsers(List<RaidMemberDTO> users) {
+        this.users = users;
+    }
+
+    public List<RaidTaskDTO> getTasks() {
+        return tasks;
+    }
+
+    public void setTasks(List<RaidTaskDTO> tasks) {
+        this.tasks = tasks;
     }
 }
