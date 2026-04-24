@@ -225,4 +225,24 @@ public class HabitServiceTest {
 
         assertThrows(ResponseStatusException.class, () -> habitService.deleteHabit(99L, 1L));
     }
+
+    @Test
+    public void completeHabit_negativeHabit_appliesPenaltyNotXp() throws Exception {
+        testHabit.setPositive(false);
+
+        when(habitRepository.findById(1L)).thenReturn(Optional.of(testHabit));
+        when(habitRepository.save(any())).thenReturn(testHabit);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+        when(completionEventRepository.save(any())).thenReturn(null);
+
+        habitService.completeHabit(1L, 1L);
+
+        // penalty applied
+        verify(characterService, times(1))
+                .applyNegativeHabitPenalty(eq(1L), eq(1));
+
+        // XP must NOT be awarded for negative habits
+        verify(characterService, never())
+                .awardXp(any(), any(), anyInt(), anyDouble());
+    }
 }

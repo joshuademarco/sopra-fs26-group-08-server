@@ -11,12 +11,12 @@ public class HabitCompletionEvent {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //track which habit was completed
-    @ManyToOne(fetch = FetchType.LAZY) //each habit can be completed multiple times
+    // track which habit was completed
+    @ManyToOne(fetch = FetchType.LAZY) // each habit can be completed multiple times
     @JoinColumn(name = "habit_id", nullable = false)
     private Habit habit;
 
-    //track which user completed the habit
+    // track which user completed the habit
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -24,18 +24,18 @@ public class HabitCompletionEvent {
     @Column(nullable = false)
     private Instant completedAt;
 
-    //xp before weather multiplier (just based on habit difficulty)
+    // xp before weather multiplier (just based on habit difficulty)
     @Column(nullable = false)
     private Integer baseXp;
 
     @Column(nullable = false)
     private Double weatherMultiplier = 1.0;
 
-    //final xp after multiplier: multipliedXp = baseXp * weatherMultiplier
+    // final xp after multiplier: multipliedXp = baseXp * weatherMultiplier
     @Column(nullable = false)
     private Integer multipliedXp;
 
-    //current weather code at time of completion -> for debugging
+    // current weather code at time of completion -> for debugging
     private Integer weatherCode;
 
     @PrePersist

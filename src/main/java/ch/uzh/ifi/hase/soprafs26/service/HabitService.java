@@ -24,7 +24,7 @@ import ch.uzh.ifi.hase.soprafs26.repository.UserRepository;
                // -> rolls back if anyhting fails
 public class HabitService {
     private final Logger log = LoggerFactory.getLogger(HabitService.class);
-    
+
     private final WeatherService weatherService;
     private final HabitRepository habitRepository;
     private final UserRepository userRepository;
@@ -68,10 +68,8 @@ public class HabitService {
     public Habit completeHabit(Long habitId, Long userId) {
         Habit habit = getHabitOrThrow(habitId);
 
-        // verify habit belongs to user
         if (!habit.getUser().getId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                    "You can only complete your own habits");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only complete your own habits");
         }
 
         if (habit.getCompleted()) {
@@ -84,18 +82,25 @@ public class HabitService {
         habit.setLastCompletedAt(Instant.now());
         habitRepository.save(habit);
 
-        // based on habit weight (difficulty)
-        int baseXp = characterService.calculateBaseXp(habit.getWeight());
+        if (habit.getPositive()) {
+            // positive habit -> award XP + update stat 
+            int baseXp = characterService.calculateBaseXp(habit.getWeight());
+            double weatherMultiplier = getWeatherMultiplierSafely(habit.getCategory());
+            int weatherCode = getWeatherCodeSafely();
+            int finalXp = characterService.awardXp(
+                    userId, habit.getCategory(), baseXp, weatherMultiplier);
 
-        double weatherMultiplier = getWeatherMultiplierSafely(habit.getCategory());
-        int weatherCode = getWeatherCodeSafely();
+            // record positive habit completion with XP details
+            recordCompletionEvent(habit, getUserOrThrow(userId),
+                    baseXp, finalXp, weatherMultiplier, weatherCode);
+        } else {
+            // negative habit -> health penalty only, no XP + no stat increase
+            characterService.applyNegativeHabitPenalty(userId, habit.getWeight());
 
-        int finalXp = characterService.awardXp(
-                userId, habit.getCategory(), baseXp, weatherMultiplier);
-
-        // added this for now so e.g. we could later show history of all completions
-        recordCompletionEvent(habit, getUserOrThrow(userId),
-                baseXp, finalXp, weatherMultiplier, weatherCode);
+            // record event with zero XP to show in history
+            recordCompletionEvent(habit, getUserOrThrow(userId),
+                    0, 0, 1.0, 0);
+        }
 
         return habit;
     }
@@ -126,7 +131,6 @@ public class HabitService {
         completionEventRepository.save(event);
         log.debug("Recorded completion: {} XP for habit '{}'", multipliedXp, habit.getTitle());
     }
-
 
     private double getWeatherMultiplierSafely(HabitCategory category) {
         try {
