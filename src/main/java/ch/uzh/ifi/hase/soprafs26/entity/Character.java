@@ -105,6 +105,30 @@ public class Character implements Serializable {
         }
     }
 
+    public void applyNegativeHabitPenalty(Integer weight) {
+        int damage;
+        if (weight == null || weight < 1) damage = 1;  // default easy
+        else if (weight == 1) damage = 1;  // easy
+        else if (weight == 2) damage = 2;  // medium
+        else damage = 3;  // hard
+        
+        this.health = Math.max(0, this.health - damage);
+        // if health drops to 0 -> completly reset character 
+        if (this.health <= 0) {
+            resetCharacter();
+        }
+    }
+
+    private void resetCharacter() {
+        this.level = 1;
+        this.maxHealth = 10;
+        this.health = this.maxHealth;
+        this.experience = 0;
+        this.strength = 1;
+        this.intelligence = 1;
+        this.resilience = 1;
+    }
+
     public void hit(Integer damage) {
         int actualDamage = Math.max(0, damage - this.resilience);
         this.health = Math.max(0, this.health - actualDamage);

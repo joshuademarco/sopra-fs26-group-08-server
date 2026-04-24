@@ -1,5 +1,7 @@
 package ch.uzh.ifi.hase.soprafs26.service;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -68,6 +70,8 @@ public class UserService {
         newUser.setToken(UUID.randomUUID().toString());
         newUser.setStatus(UserStatus.ONLINE);
         checkIfUserExists(newUser);
+		// hash the password before saving
+		newUser.setPassword(hashPassword(newUser.getPassword()));
 
         // TODO: hash the password before saving it in the database!
 
@@ -106,16 +110,33 @@ public class UserService {
         }
     }
 
-    public User login(String email, String password) {
-        User user = userRepository.findByEmail(email);
-        if (user == null || !user.getPassword().equals(password)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
-        }
-        user.setStatus(UserStatus.ONLINE);
-        user.setOnline(true);
-        userRepository.saveAndFlush(user);
-        return user;
-    }
+	private String hashPassword(String password) {
+		try {
+			MessageDigest digest = MessageDigest.getInstance("SHA-256");
+			byte[] hash = digest.digest(password.getBytes());
+			StringBuilder hexString = new StringBuilder();
+			for (byte b : hash) {
+				String hex = Integer.toHexString(0xff & b);
+				if (hex.length() == 1) hexString.append('0');
+				hexString.append(hex);
+			}
+			return hexString.toString();
+		} catch (NoSuchAlgorithmException e) {
+			throw new RuntimeException("SHA-256 algorithm not found", e);
+		}
+	}
+
+	public User login(String email, String password) {
+		User user = userRepository.findByEmail(email);
+		// hash the input password to compare with stored hash
+		if (user == null || !user.getPassword().equals(hashPassword(password))) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
+		}
+		user.setStatus(UserStatus.ONLINE);
+		user.setOnline(true);
+		userRepository.saveAndFlush(user);
+		return user;
+	}
 
     public User getUserByToken(String token) {
         if (token == null || token.isBlank()) {
@@ -148,8 +169,17 @@ public class UserService {
         List<User> users = userRepository.findAll();
         return users.stream()
                 .filter(user -> user.getCharacter() != null)
-                .sorted((u1, u2) -> Integer.compare(u2.getCharacter().getExperience(),
-                        u1.getCharacter().getExperience()))
+                .sorted((u1, u2) -> {
+                    int levelCompare = Integer.compare(u2.getCharacter().getLevel(), u1.getCharacter().getLevel());
+                    if (levelCompare != 0) {
+                        return levelCompare;
+                    }
+                    int experienceCompare = Integer.compare(u2.getCharacter().getExperience(), u1.getCharacter().getExperience());
+                    if (experienceCompare != 0) {
+                        return experienceCompare;
+                    }
+                    return u1.getUsername().compareTo(u2.getUsername());
+                })
                 .map(user -> new LeaderboardEntryDTO(user.getUsername(), user.getCharacter().getExperience(),
                         user.getCharacter().getLevel()))
                 .toList();

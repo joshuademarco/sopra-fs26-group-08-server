@@ -1,16 +1,12 @@
 package ch.uzh.ifi.hase.soprafs26.controller;
 
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.ObjectMapper;
+import java.util.Collections;
+import java.util.List;
 
-
-import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
-import ch.uzh.ifi.hase.soprafs26.entity.User;
-import ch.uzh.ifi.hase.soprafs26.rest.dto.UserPostDTO;
-import ch.uzh.ifi.hase.soprafs26.service.UserService;
-
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import static org.mockito.BDDMockito.given;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.HttpStatus;
@@ -18,18 +14,17 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.util.Collections;
-import java.util.List;
-
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import org.springframework.web.server.ResponseStatusException;
+
+import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
+import ch.uzh.ifi.hase.soprafs26.entity.User;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.LeaderboardEntryDTO;
+import ch.uzh.ifi.hase.soprafs26.service.UserService;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * UserControllerTest
@@ -73,6 +68,21 @@ public class UserControllerTest {
 	}
 
 	@Test
+	public void givenLeaderboard_whenGetLeaderboard_thenReturnSortedJsonArray() throws Exception {
+		// given
+		LeaderboardEntryDTO leaderboardEntry = new LeaderboardEntryDTO("testUsername", 345, 7);
+		List<LeaderboardEntryDTO> leaderboard = Collections.singletonList(leaderboardEntry);
+		given(userService.getLeaderboard()).willReturn(leaderboard);
+
+		MockHttpServletRequestBuilder getRequest = get("/leaderboard").contentType(MediaType.APPLICATION_JSON);
+
+		mockMvc.perform(getRequest).andExpect(status().isOk())
+				.andExpect(jsonPath("$", hasSize(1)))
+				.andExpect(jsonPath("$[0].username", is(leaderboardEntry.getUsername())))
+				.andExpect(jsonPath("$[0].experience", is(leaderboardEntry.getExperience())))
+				.andExpect(jsonPath("$[0].level", is(leaderboardEntry.getLevel())));
+	}
+
 	/**
 	 * Helper Method to convert userPostDTO into a JSON string such that the input
 	 * can be processed

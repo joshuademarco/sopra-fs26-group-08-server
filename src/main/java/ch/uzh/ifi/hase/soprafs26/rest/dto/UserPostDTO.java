@@ -9,6 +9,7 @@ public class UserPostDTO {
 
 	@NotBlank(message = "Username can't be blank")
 	@Size(min = 2, message = "Username must be at least 2 characters long")
+	@Pattern(regexp = "^\\S+$", message = "Username must not contain any spaces")
 	private String username;
 
 	@NotBlank(message = "Email can't be blank")
