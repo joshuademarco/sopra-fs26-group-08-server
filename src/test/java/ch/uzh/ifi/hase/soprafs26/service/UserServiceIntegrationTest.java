@@ -17,6 +17,9 @@ import org.springframework.web.server.ResponseStatusException;
 import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.repository.CharacterRepository;
+import ch.uzh.ifi.hase.soprafs26.repository.HabitCompletionEventRepository;
+import ch.uzh.ifi.hase.soprafs26.repository.HabitRepository;
+import ch.uzh.ifi.hase.soprafs26.repository.TodoRepository;
 import ch.uzh.ifi.hase.soprafs26.repository.UserRepository;
 
 /**
@@ -35,17 +38,32 @@ public class UserServiceIntegrationTest {
 	@Autowired
 	private UserService userService;
 
-	@Autowired 
+	@Autowired
     private CharacterRepository characterRepository;
+
+	@Autowired
+    private HabitCompletionEventRepository habitCompletionEventRepository;
+
+	@Autowired
+    private HabitRepository habitRepository;
+
+	@Autowired
+    private TodoRepository todoRepository;
 
 	@BeforeEach
     public void setup() {
+        habitCompletionEventRepository.deleteAll();
+        habitRepository.deleteAll();
+        todoRepository.deleteAll();
         characterRepository.deleteAll();
         userRepository.deleteAll();
     }
 
 	@AfterEach
     public void teardown() {
+        habitCompletionEventRepository.deleteAll();
+        habitRepository.deleteAll();
+        todoRepository.deleteAll();
         characterRepository.deleteAll();
         userRepository.deleteAll();
     }
