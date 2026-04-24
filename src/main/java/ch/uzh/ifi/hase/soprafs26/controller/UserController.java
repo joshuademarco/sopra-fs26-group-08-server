@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import ch.uzh.ifi.hase.soprafs26.rest.dto.LeaderboardEntryDTO;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.mapper.DTOMapper;
@@ -53,5 +54,12 @@ public class UserController {
     public UserGetDTO getUser(@PathVariable Long userId) {
         User user = userService.getUserById(userId);
         return DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
+    }
+
+    @GetMapping("/leaderboard")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public List<LeaderboardEntryDTO> getLeaderboard() {
+        return userService.getLeaderboard();
     }
 }
