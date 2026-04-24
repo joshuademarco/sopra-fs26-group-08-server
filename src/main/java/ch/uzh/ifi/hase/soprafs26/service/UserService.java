@@ -165,7 +165,17 @@ public class UserService {
 		List<User> users = userRepository.findAll();
 		return users.stream()
 			.filter(user -> user.getCharacter() != null)
-			.sorted((u1, u2) -> Integer.compare(u2.getCharacter().getExperience(), u1.getCharacter().getExperience()))
+			.sorted((u1, u2) -> {
+				int levelCompare = Integer.compare(u2.getCharacter().getLevel(), u1.getCharacter().getLevel());
+				if (levelCompare != 0) {
+					return levelCompare;
+				}
+				int experienceCompare = Integer.compare(u2.getCharacter().getExperience(), u1.getCharacter().getExperience());
+				if (experienceCompare != 0) {
+					return experienceCompare;
+				}
+				return u1.getUsername().compareTo(u2.getUsername());
+			})
 			.map(user -> new LeaderboardEntryDTO(user.getUsername(), user.getCharacter().getExperience(), user.getCharacter().getLevel()))
 			.toList();
 	}

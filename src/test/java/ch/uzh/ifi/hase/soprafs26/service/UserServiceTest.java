@@ -1,12 +1,11 @@
 package ch.uzh.ifi.hase.soprafs26.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
 import java.util.Arrays;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
@@ -112,26 +111,36 @@ public class UserServiceTest {
         lowCharacter.setLevel(1);
         userLow.setCharacter(lowCharacter);
 
-        User userHigh = new User();
-        userHigh.setUsername("highUser");
-        Character highCharacter = new Character();
-        highCharacter.setExperience(250);
-        highCharacter.setLevel(5);
-        userHigh.setCharacter(highCharacter);
+        User userHighA = new User();
+        userHighA.setUsername("alphaUser");
+        Character highCharacterA = new Character();
+        highCharacterA.setExperience(250);
+        highCharacterA.setLevel(5);
+        userHighA.setCharacter(highCharacterA);
+
+        User userHighB = new User();
+        userHighB.setUsername("betaUser");
+        Character highCharacterB = new Character();
+        highCharacterB.setExperience(250);
+        highCharacterB.setLevel(5);
+        userHighB.setCharacter(highCharacterB);
 
         User noCharacterUser = new User();
         noCharacterUser.setUsername("noCharacterUser");
 
-        Mockito.when(userRepository.findAll()).thenReturn(Arrays.asList(userLow, noCharacterUser, userHigh));
+        Mockito.when(userRepository.findAll()).thenReturn(Arrays.asList(userLow, noCharacterUser, userHighB, userHighA));
 
         List<LeaderboardEntryDTO> leaderboard = userService.getLeaderboard();
 
-        assertEquals(2, leaderboard.size());
-        assertEquals("highUser", leaderboard.get(0).getUsername());
+        assertEquals(3, leaderboard.size());
+        assertEquals("alphaUser", leaderboard.get(0).getUsername());
         assertEquals(250, leaderboard.get(0).getExperience());
         assertEquals(5, leaderboard.get(0).getLevel());
-        assertEquals("lowUser", leaderboard.get(1).getUsername());
-        assertEquals(10, leaderboard.get(1).getExperience());
-        assertEquals(1, leaderboard.get(1).getLevel());
+        assertEquals("betaUser", leaderboard.get(1).getUsername());
+        assertEquals(250, leaderboard.get(1).getExperience());
+        assertEquals(5, leaderboard.get(1).getLevel());
+        assertEquals("lowUser", leaderboard.get(2).getUsername());
+        assertEquals(10, leaderboard.get(2).getExperience());
+        assertEquals(1, leaderboard.get(2).getLevel());
     }
 }
