@@ -40,5 +40,15 @@ public class UserGetDTO {
 
 	public void setStatus(UserStatus status) {
 		this.status = status;
-	} 
+	}
+
+	public String getCharacterType() {
+		return characterType;
+	}
+
+	public void setCharacterType(String characterType) {
+		this.characterType = characterType;
+	}
+
+	private String characterType;
 }

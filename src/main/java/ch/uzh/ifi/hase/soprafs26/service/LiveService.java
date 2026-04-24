@@ -160,10 +160,12 @@ public class LiveService {
                 continue;
             }
 
+            String characterType = user.getCharacter() != null ? user.getCharacter().getType() : null;
             payload.put(new JSONObject()
                     .put("id", user.getId())
                     .put("username", user.getUsername())
-                    .put("status", user.getStatus()));
+                    .put("status", user.getStatus())
+                    .put("characterType", characterType != null ? characterType : JSONObject.NULL));
         }
 
         return payload.toString();
