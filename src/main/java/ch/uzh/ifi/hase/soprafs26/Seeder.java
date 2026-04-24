@@ -33,6 +33,9 @@ public class Seeder implements ApplicationRunner {
     private final HabitService habitService;
     private final TodoService todoService;
 
+    private final String DEFAULT_PASSWORD = "Password123";
+    private final String DEFAULT_GROUP_NAME = "Testing Guild";
+
     public Seeder(UserRepository userRepository,
             UserService userService,
             GroupService groupService,
@@ -56,10 +59,10 @@ public class Seeder implements ApplicationRunner {
         log.info("Seeding database...");
 
         Group group = seedGroup();
-        User josh = seedUser("josh", "josh@icuzh.ch", "Password123", group);
-        User ale = seedUser("ale", "ale@icuzh.ch", "Password123", group);
-        User michi = seedUser("michi", "michi@icuzh.ch", "Password123", null);
-        User leo = seedUser("leo", "leo@icuzh.ch", "Password123", null);
+        User josh = seedUser("josh", "josh@icuzh.ch", DEFAULT_PASSWORD, group);
+        User ale = seedUser("ale", "ale@icuzh.ch", DEFAULT_PASSWORD, group);
+        User michi = seedUser("michi", "michi@icuzh.ch", DEFAULT_PASSWORD, null);
+        User leo = seedUser("leo", "leo@icuzh.ch", DEFAULT_PASSWORD, null);
 
         for (User user : new User[] { josh, ale, michi, leo }) {
             seedHabits(user);
@@ -71,9 +74,9 @@ public class Seeder implements ApplicationRunner {
 
     private Group seedGroup() {
         Group group = new Group();
-        group.setName("Testing Guild");
-        group.setDescription("The starting guild for test users.");
-        return groupService.createGroup(group);
+        String token = userService.login("josh", DEFAULT_PASSWORD).getToken();
+        group.setName(DEFAULT_GROUP_NAME);
+        return groupService.createGroup(group, token);
     }
 
     private User seedUser(String username, String email, String password, Group group) {
@@ -81,7 +84,7 @@ public class Seeder implements ApplicationRunner {
         user.setUsername(username);
         user.setEmail(email);
         user.setPassword(password);
-        user.setGroup(group);
+        user.addGroup(group);
         return userService.createUser(user);
     }
 
