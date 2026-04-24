@@ -152,7 +152,7 @@ public class RaidService {
     }
 
     private void tryAutoSchedule(BossRaid raid, Group group, int windowDays) {
-        List<Long> memberIds = group.getMembers().stream()
+        List<Long> memberIds = group.getUsers().stream()
                 .map(u -> u.getId())
                 .collect(Collectors.toList());
 
