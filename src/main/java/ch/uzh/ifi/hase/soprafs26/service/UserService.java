@@ -18,6 +18,7 @@ import ch.uzh.ifi.hase.soprafs26.entity.Character;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.repository.CharacterRepository;
 import ch.uzh.ifi.hase.soprafs26.repository.UserRepository;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.LeaderboardEntryDTO;
 
 /**
  * User Service
@@ -140,5 +141,14 @@ public class UserService {
 		userRepository.saveAndFlush(user);
 		return user;
 
+	}
+
+	public List<LeaderboardEntryDTO> getLeaderboard() {
+		List<User> users = userRepository.findAll();
+		return users.stream()
+			.filter(user -> user.getCharacter() != null)
+			.sorted((u1, u2) -> Integer.compare(u2.getCharacter().getExperience(), u1.getCharacter().getExperience()))
+			.map(user -> new LeaderboardEntryDTO(user.getUsername(), user.getCharacter().getExperience(), user.getCharacter().getLevel()))
+			.toList();
 	}
 }
