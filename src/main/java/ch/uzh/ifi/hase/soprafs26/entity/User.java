@@ -2,6 +2,10 @@ package ch.uzh.ifi.hase.soprafs26.entity;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
 import jakarta.persistence.CascadeType;
@@ -13,7 +17,8 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
@@ -58,6 +63,12 @@ public class User implements Serializable {
     @Column(nullable = false)
     private boolean online;
 
+    @Column
+    private Integer health;
+
+    @Column
+    private Integer maxHealth;
+
     @PrePersist
     protected void onCreate() {
         Instant now = Instant.now();
@@ -70,9 +81,14 @@ public class User implements Serializable {
         this.updatedAt = Instant.now();
     }
 
-    @ManyToOne
-    @JoinColumn(name = "group_id")
-    private Group group;
+    @JsonIgnore
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "user_groups",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "group_id")
+    )
+    private Set<Group> groups = new HashSet<>();
 
     public void updateProfile(String username, String email) {
 
@@ -163,11 +179,39 @@ public class User implements Serializable {
         this.character = character; 
     }
 
-    public Group getGroup() {
-        return group;
+    public Set<Group> getGroups() { 
+        return groups; 
     }
 
-    public void setGroup(Group group) {
-        this.group = group;
+    public void setGroups(Set<Group> groups) { 
+        this.groups = groups; 
+    }
+
+    public void addGroup(Group group) {
+        this.groups.add(group);
+        if (!group.getUsers().contains(this)) {
+            group.getUsers().add(this);
+        }
+    }
+
+    public void removeGroup(Group group) {
+        this.groups.remove(group);
+        group.getUsers().remove(this);
+    }
+
+    public Integer getHealth() { 
+        return health; 
+    }
+
+    public void setHealth(Integer health) { 
+        this.health = health; 
+    }
+
+    public Integer getMaxHealth() { 
+        return maxHealth; 
+    }
+
+    public void setMaxHealth(Integer maxHealth) { 
+        this.maxHealth = maxHealth; 
     }
 }

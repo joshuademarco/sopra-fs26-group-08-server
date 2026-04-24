@@ -101,11 +101,13 @@ public interface DTOMapper {
 	TodoGetDTO convertEntityToTodoGetDTO(Todo todo);
 
 	@Mapping(source = "name", target = "name")
-	@Mapping(source = "description", target = "description")
+    @Mapping(source = "password", target = "password")
 	Group convertGroupPostDTOtoEntity(GroupPostDTO groupPostDTO);
 
 	@Mapping(source = "id", target = "id")
 	@Mapping(source = "name", target = "name")
-	@Mapping(source = "description", target = "description")
+	@Mapping(source = "createdBy", target = "createdBy")
+	@Mapping(source = "createdAt", target = "createdAt")
+	@Mapping(source = "users", target = "users")
 	GroupGetDTO convertEntityToGroupGetDTO(Group group);
 }
