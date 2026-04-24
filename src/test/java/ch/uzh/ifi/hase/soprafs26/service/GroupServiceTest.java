@@ -82,6 +82,17 @@ public class GroupServiceTest {
   }
 
   @Test
+  public void createGroup_duplicateName_throwsBadRequest() {
+    Group newGroup = new Group();
+    newGroup.setName("Test Group");
+    newGroup.setPassword("secret");
+
+    when(groupRepository.findByName("Test Group")).thenReturn(newGroup);
+
+    assertThrows(ResponseStatusException.class, () -> groupService.createGroup(newGroup, "token"));
+  }
+
+  @Test
   public void joinGroup_validInputs_success() {
     Group existingGroup = new Group();
     existingGroup.setId(2L);
