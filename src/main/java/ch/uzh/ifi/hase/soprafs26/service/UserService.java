@@ -1,12 +1,13 @@
 package ch.uzh.ifi.hase.soprafs26.service;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -36,7 +37,6 @@ public class UserService {
 	private final CharacterRepository characterRepository;
 	private final CharacterService characterService;
 
-	@Autowired
     public UserService(@Qualifier("userRepository") UserRepository userRepository, 
                        CharacterService characterService,
                        CharacterRepository characterRepository) { 
@@ -68,7 +68,8 @@ public class UserService {
 		newUser.setOnline(true);
 		checkIfUserExists(newUser);
 
-		//TODO: hash the password before saving it in the database!
+		// hash the password before saving
+		newUser.setPassword(hashPassword(newUser.getPassword()));
 
 		newUser.setHealth(100);
         newUser.setMaxHealth(100);
@@ -105,9 +106,26 @@ public class UserService {
 		}
 	}
 
+	private String hashPassword(String password) {
+		try {
+			MessageDigest digest = MessageDigest.getInstance("SHA-256");
+			byte[] hash = digest.digest(password.getBytes());
+			StringBuilder hexString = new StringBuilder();
+			for (byte b : hash) {
+				String hex = Integer.toHexString(0xff & b);
+				if (hex.length() == 1) hexString.append('0');
+				hexString.append(hex);
+			}
+			return hexString.toString();
+		} catch (NoSuchAlgorithmException e) {
+			throw new RuntimeException("SHA-256 algorithm not found", e);
+		}
+	}
+
 	public User login(String email, String password) {
 		User user = userRepository.findByEmail(email);
-		if (user == null || !user.getPassword().equals(password)) {
+		// hash the input password to compare with stored hash
+		if (user == null || !user.getPassword().equals(hashPassword(password))) {
 			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
 		}
 		user.setStatus(UserStatus.ONLINE);

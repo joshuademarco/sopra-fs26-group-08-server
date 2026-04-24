@@ -127,25 +127,13 @@ public class HabitService {
         log.debug("Recorded completion: {} XP for habit '{}'", multipliedXp, habit.getTitle());
     }
 
-    private String mapToWeatherCategory(HabitCategory category) {
-        switch (category) {
-            case PHYSICAL:
-                return "outdoor";
-            case COGNITIVE:
-                return "indoor";
-            case EMOTIONAL:
-                return "indoor";
-            default:
-                return "outdoor";
-        }
-    }
 
     private double getWeatherMultiplierSafely(HabitCategory category) {
         try {
             String json = weatherService.getWeather();
             int code = weatherService.parseWeatherData(json);
-            String weatherCat = mapToWeatherCategory(category);
-            return weatherService.getMultiplier(code, weatherCat);
+            String categoryStr = category.name().toLowerCase();
+            return weatherService.getMultiplier(code, categoryStr);
         } catch (Exception e) { // safety mechanism so broken API never blocks habit completion
             log.warn("Weather API unavailable, using 1.0x multiplier: {}", e.getMessage());
             return 1.0;
