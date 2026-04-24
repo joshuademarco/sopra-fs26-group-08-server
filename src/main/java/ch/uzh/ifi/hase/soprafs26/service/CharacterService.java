@@ -27,6 +27,10 @@ public class CharacterService {
     }
 
     public Character createCharacter(User user) {
+        return createCharacter(user, null);
+    }
+
+    public Character createCharacter(User user, String type) {
         Character newCharacter = new Character();
         newCharacter.setUser(user);
 
@@ -37,7 +41,7 @@ public class CharacterService {
         newCharacter.setStrength(1);
         newCharacter.setResilience(1);
         newCharacter.setIntelligence(1);
-        newCharacter.setType("josh");
+        newCharacter.setType(type != null && !type.isBlank() ? type : "josh");
         newCharacter.setSkinColor("default");
 
         newCharacter = characterRepository.save(newCharacter);
