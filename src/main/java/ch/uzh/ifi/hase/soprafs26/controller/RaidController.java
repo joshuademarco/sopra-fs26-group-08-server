@@ -57,6 +57,13 @@ public class RaidController {
         raidService.completeTask(raidId, taskId, success, token);
     }
 
+    @PostMapping("/groups/{groupId}/raids/quick")
+    @ResponseStatus(HttpStatus.CREATED)
+    public RaidGetDTO quickStartRaid(@PathVariable Long groupId) {
+        BossRaid raid = raidService.quickStartRaid(groupId);
+        return raidService.convertEntityToRaidGetDTO(raid);
+    }
+
     @PostMapping("/raids/{raidId}/reschedule")
     public RaidGetDTO rescheduleRaid(@PathVariable Long raidId,
             @RequestParam(defaultValue = "7") int windowDays) {

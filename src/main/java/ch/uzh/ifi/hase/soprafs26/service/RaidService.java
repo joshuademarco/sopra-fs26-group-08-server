@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import ch.uzh.ifi.hase.soprafs26.constant.HabitCategory;
 import ch.uzh.ifi.hase.soprafs26.constant.RaidStatus;
 import ch.uzh.ifi.hase.soprafs26.entity.BossRaid;
 import ch.uzh.ifi.hase.soprafs26.entity.Group;
@@ -384,6 +385,66 @@ public class RaidService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token");
         }
         return user;
+    }
+
+    @Transactional
+    public BossRaid quickStartRaid(Long groupId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Group not found"));
+
+        BossRaid raid = new BossRaid();
+        raid.setGroup(group);
+        raid.setName("Innere Schweinehund");
+        raid.setHealth(1000);
+        raid.setMaxHealth(1000);
+        raid.setDurationSeconds(300);
+        raid.setScheduledTime(Instant.now());
+        raid.setStatus(RaidStatus.SCHEDULED);
+        raid = bossRaidRepository.save(raid);
+
+        List<User> members = new ArrayList<>(group.getUsers());
+        int size = members.size();
+
+        createQuickTask(raid, members.get(0 % size), "Make your bed",              "Tidy your bed right now",                                       HabitCategory.PHYSICAL,  80,  10, 1, 60);
+        createQuickTask(raid, members.get(1 % size), "Stretch your legs",          "Stretch both of your legs now!",                                HabitCategory.PHYSICAL,  80,  10, 1, 60);
+        createQuickTask(raid, members.get(2 % size), "Deep breathing",             "Take 10 slow deep breaths",                                     HabitCategory.EMOTIONAL, 80,  10, 1, 60);
+        createQuickTask(raid, members.get(3 % size), "Drink a glass of water",     "Finish one full glass",                                         HabitCategory.PHYSICAL,  80,  10, 1, 60);
+
+        createQuickTask(raid, members.get(0 % size), "Desk cleanup",               "Remove clutter from your desk",                                 HabitCategory.COGNITIVE, 90,  12, 2, 60);
+        createQuickTask(raid, members.get(1 % size), "Do 10 Push-ups",             "Perform 10 push-ups",                                           HabitCategory.PHYSICAL,  90,  12, 2, 60);
+        createQuickTask(raid, members.get(2 % size), "Posture check",              "Make sure you sit and stand straight",                          HabitCategory.PHYSICAL,  90,  12, 2, 15);
+        createQuickTask(raid, members.get(3 % size), "Positivity Check",           "Write down 3 things positive about yourself",                   HabitCategory.EMOTIONAL, 90,  12, 2, 60);
+
+        createQuickTask(raid, members.get(0 % size), "Gratefulness Check",         "Write down 3 things you're grateful for",                       HabitCategory.COGNITIVE, 100, 15, 3, 45);
+        createQuickTask(raid, members.get(1 % size), "Answer unread messages",     "Reply to 3 unread messages",                                    HabitCategory.COGNITIVE, 100, 15, 3, 60);
+        createQuickTask(raid, members.get(2 % size), "Refill water bottle",        "Refill and place it on your desk",                              HabitCategory.PHYSICAL,  100, 15, 3, 30);
+        createQuickTask(raid, members.get(3 % size), "One positive message",       "Send an encouraging message to someone",                        HabitCategory.EMOTIONAL, 100, 15, 3, 60);
+
+        createQuickTask(raid, members.get(0 % size), "Plan top 3 tasks",           "List your top 3 priorities for today",                          HabitCategory.COGNITIVE, 110, 18, 4, 60);
+        createQuickTask(raid, members.get(1 % size), "Eye break",                  "Look away from the screen for 60 seconds",                      HabitCategory.EMOTIONAL, 110, 18, 4, 60);
+        createQuickTask(raid, members.get(2 % size), "10 squats",                  "Do 10 bodyweight squats",                                       HabitCategory.PHYSICAL,  110, 18, 4, 60);
+        createQuickTask(raid, members.get(3 % size), "Clear one small task",       "Complete one pending micro-task",                               HabitCategory.COGNITIVE, 110, 18, 4, 60);
+
+        raid.startRaid();
+        bossRaidRepository.save(raid);
+        broadcastRaidUpdate(raid);
+
+        return raid;
+    }
+
+    private void createQuickTask(BossRaid raid, User assignedUser, String title, String description,
+            HabitCategory category, int successfulDamage, int groupDamage, int taskOrder, int timeLimitSeconds) {
+        RaidTask task = new RaidTask();
+        task.setRaid(raid);
+        task.setAssignedUser(assignedUser);
+        task.setTitle(title);
+        task.setDescription(description);
+        task.setCategory(category);
+        task.setSuccessfulDamage(successfulDamage);
+        task.setGroupDamage(groupDamage);
+        task.setTaskOrder(taskOrder);
+        task.setTimeLimitSeconds(timeLimitSeconds);
+        raidTaskRepository.save(task);
     }
 
     private void tryAutoSchedule(BossRaid raid, Group group, int windowDays) {
