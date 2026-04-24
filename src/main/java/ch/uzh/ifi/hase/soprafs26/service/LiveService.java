@@ -2,7 +2,9 @@ package ch.uzh.ifi.hase.soprafs26.service;
 
 import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.repository.UserRepository;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.RaidMemberDTO;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.json.JSONArray;
@@ -93,6 +95,38 @@ public class LiveService {
         session.sendMessage(new TextMessage(buildSnapshotPayload()));
     }
 
+    public synchronized void broadcastRaidUpdate(Long raidId, Long groupId, Integer health, Integer maxHealth,
+            String status, List<RaidMemberDTO> members) {
+        JSONArray membersJson = new JSONArray();
+        if (members != null) {
+            for (RaidMemberDTO m : members) {
+                membersJson.put(new JSONObject()
+                        .put("userId", m.getUserId())
+                        .put("health", m.getHealth() != null ? m.getHealth() : JSONObject.NULL)
+                        .put("maxHealth", m.getMaxHealth() != null ? m.getMaxHealth() : JSONObject.NULL));
+            }
+        }
+
+        String payload = new JSONObject()
+                .put("type", "RAID_UPDATE")
+                .put("raidId", raidId)
+                .put("groupId", groupId)
+                .put("health", health)
+                .put("maxHealth", maxHealth)
+                .put("status", status)
+                .put("members", membersJson)
+                .toString();
+
+        for (WebSocketSession session : activeSessions.values()) {
+            if (session == null || !session.isOpen())
+                continue;
+            try {
+                session.sendMessage(new TextMessage(payload));
+            } catch (IOException ignored) {
+            }
+        }
+    }
+
     public synchronized void broadcastSnapshot() {
         String payload = buildSnapshotPayload();
 
@@ -104,7 +138,7 @@ public class LiveService {
             try {
                 session.sendMessage(new TextMessage(payload));
             } catch (IOException exception) {
-                
+
             }
         }
     }
@@ -127,9 +161,9 @@ public class LiveService {
             }
 
             payload.put(new JSONObject()
-                .put("id", user.getId())
-                .put("username", user.getUsername())
-                .put("status", user.getStatus()));
+                    .put("id", user.getId())
+                    .put("username", user.getUsername())
+                    .put("status", user.getStatus()));
         }
 
         return payload.toString();
