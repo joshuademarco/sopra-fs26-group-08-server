@@ -135,6 +135,36 @@ public class UserService {
 		return user;
 	}
 
+	public User changePassword(String token, String currentPassword, String newPassword) {
+		User user = getUserByToken(token);
+		if (!user.getPassword().equals(hashPassword(currentPassword))) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid current password");
+		}
+		user.setPassword(hashPassword(newPassword));
+		userRepository.saveAndFlush(user);
+		return user;
+	}
+
+	public User updateProfile(String token, String username, String email) {
+		User user = getUserByToken(token);
+		validateProfileUpdate(user, username, email);
+		user.updateProfile(username, email);
+		userRepository.saveAndFlush(user);
+		return user;
+	}
+
+	private void validateProfileUpdate(User existingUser, String username, String email) {
+		User userByUsername = userRepository.findByUsername(username);
+		if (userByUsername != null && !userByUsername.getId().equals(existingUser.getId())) {
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists");
+		}
+
+		User userByEmail = userRepository.findByEmail(email);
+		if (userByEmail != null && !userByEmail.getId().equals(existingUser.getId())) {
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
+		}
+	}
+
     public User getUserByToken(String token) {
         if (token == null || token.isBlank()) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing Token");

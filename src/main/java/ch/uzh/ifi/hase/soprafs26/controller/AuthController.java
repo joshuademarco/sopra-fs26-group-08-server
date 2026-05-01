@@ -1,7 +1,23 @@
 package ch.uzh.ifi.hase.soprafs26.controller;
 
+import java.time.Duration;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import ch.uzh.ifi.hase.soprafs26.entity.User;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.ChangePasswordDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.LoginPostDTO;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.UpdateProfileDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.mapper.DTOMapper;
@@ -9,12 +25,6 @@ import ch.uzh.ifi.hase.soprafs26.service.LiveService;
 import ch.uzh.ifi.hase.soprafs26.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import java.time.Duration;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 /**
  * Auth Controller
@@ -59,6 +69,21 @@ public class AuthController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, createAuthCookie(loggedInUser.getToken(), request).toString())
                 .body(userGetDTO);
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<Void> changePassword(@CookieValue(name = "token", required = false) String tokenCookie,
+            @Valid @RequestBody ChangePasswordDTO changePasswordDTO) {
+        userService.changePassword(tokenCookie, changePasswordDTO.getCurrentPassword(), changePasswordDTO.getNewPassword());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/update-profile")
+    public ResponseEntity<UserGetDTO> updateProfile(@CookieValue(name = "token", required = false) String tokenCookie,
+            @Valid @RequestBody UpdateProfileDTO updateProfileDTO) {
+        User updatedUser = userService.updateProfile(tokenCookie, updateProfileDTO.getUsername(), updateProfileDTO.getEmail());
+        UserGetDTO userGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(updatedUser);
+        return ResponseEntity.ok(userGetDTO);
     }
 
     @GetMapping("/me")
