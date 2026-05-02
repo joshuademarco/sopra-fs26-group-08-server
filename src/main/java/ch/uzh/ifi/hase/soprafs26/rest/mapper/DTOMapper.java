@@ -57,6 +57,9 @@ public interface DTOMapper {
     @Mapping(source = "intelligence", target = "intelligence")
     @Mapping(source = "skinColor", target = "skinColor")
     @Mapping(source = "type", target = "type")
+    @Mapping(source = "equippedHat", target = "equippedHat")
+    @Mapping(source = "equippedChestPiece", target = "equippedChestPiece")
+    @Mapping(source = "equippedHandheld", target = "equippedHandheld")
     CharacterGetDTO convertEntityToCharacterGetDTO(Character character);
 
     @Mapping(source = "id", target = "id")
