@@ -12,7 +12,7 @@ public class Achievement {
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, unique = true)
+    @Column(name = "achievement_key", nullable = false, unique = true)
     private AchievementKey key;
 
     @Column(nullable = false)
