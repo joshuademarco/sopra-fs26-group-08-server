@@ -139,6 +139,7 @@ public class RaidService {
                 member.setDamageDealt(p != null ? p.getDamageDealt() : 0);
                 member.setHealth(user.getHealth());
                 member.setMaxHealth(user.getMaxHealth());
+                member.setCharacterType(user.getCharacter() != null ? user.getCharacter().getType() : null);
                 members.add(member);
             }
             dto.setUsers(members);
