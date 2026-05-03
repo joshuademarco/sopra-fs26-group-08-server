@@ -10,6 +10,7 @@ public class RaidMemberDTO {
     private Integer damageDealt;
     private Integer health;
     private Integer maxHealth;
+    private String characterType;
 
     public Long getUserId() {
         return userId;
@@ -81,5 +82,13 @@ public class RaidMemberDTO {
 
     public void setMaxHealth(Integer maxHealth) {
         this.maxHealth = maxHealth;
+    }
+
+    public String getCharacterType() {
+        return characterType;
+    }
+
+    public void setCharacterType(String characterType) {
+        this.characterType = characterType;
     }
 }
