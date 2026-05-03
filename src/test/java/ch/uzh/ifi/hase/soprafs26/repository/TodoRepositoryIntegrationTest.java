@@ -30,7 +30,6 @@ public class TodoRepositoryIntegrationTest {
         user.setPassword("password123");
         user.setToken("token-" + username);
         user.setStatus(UserStatus.ONLINE);
-        user.setOnline(true);
         return (User) entityManager.persist(user);
     }
 

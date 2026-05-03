@@ -1,9 +1,11 @@
 package ch.uzh.ifi.hase.soprafs26.rest.dto;
 
+import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
+
 public class RaidMemberDTO {
     private Long userId;
     private String username;
-    private Boolean online;
+    private UserStatus online;
     private Boolean joined;
     private Integer tasksCompleted;
     private Integer tasksFailed;
@@ -28,11 +30,11 @@ public class RaidMemberDTO {
         this.username = username;
     }
 
-    public Boolean getOnline() {
+    public UserStatus getOnline() {
         return online;
     }
 
-    public void setOnline(Boolean online) {
+    public void setOnline(UserStatus online) {
         this.online = online;
     }
 

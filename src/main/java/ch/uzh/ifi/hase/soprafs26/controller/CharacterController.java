@@ -35,4 +35,18 @@ public class CharacterController {
         Character character = characterService.getCharacterByUserId(userId);
         return DTOMapper.INSTANCE.convertEntityToCharacterGetDTO(character);
     }
+
+    @PostMapping("/revive")
+    @ResponseStatus(HttpStatus.OK)
+    public CharacterGetDTO reviveCharacter(@PathVariable Long userId, @CookieValue(name = "token", required = true) String token) {
+        User requestingUser = userService.getUserByToken(token);
+
+        if (!requestingUser.getId().equals(userId)) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                HttpStatus.FORBIDDEN, "You can only revive your own character");
+        }
+
+        Character character = characterService.reviveCharacter(userId);
+        return DTOMapper.INSTANCE.convertEntityToCharacterGetDTO(character);
+    }
 }
