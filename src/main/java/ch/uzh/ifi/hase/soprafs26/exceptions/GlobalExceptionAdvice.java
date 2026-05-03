@@ -1,4 +1,4 @@
-package ch.uzh.ifi.hase.soprafs26.exceptions;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,8 +23,15 @@ public class GlobalExceptionAdvice extends ResponseEntityExceptionHandler {
 
 	@ExceptionHandler(value = { IllegalArgumentException.class, IllegalStateException.class })
 	protected ResponseEntity<Object> handleConflict(RuntimeException ex, WebRequest request) {
-		String bodyOfResponse = "This should be application specific";
+		Map<String, String> bodyOfResponse = Map.of("message", ex.getMessage(), "reason", ex.getMessage());
 		return handleExceptionInternal(ex, bodyOfResponse, new HttpHeaders(), HttpStatus.CONFLICT, request);
+	}
+
+	@ExceptionHandler(ResponseStatusException.class)
+	protected ResponseEntity<Object> handleResponseStatusException(ResponseStatusException ex, WebRequest request) {
+		String reason = ex.getReason() != null ? ex.getReason() : ex.getMessage();
+		Map<String, String> bodyOfResponse = Map.of("message", reason, "reason", reason);
+		return handleExceptionInternal(ex, bodyOfResponse, new HttpHeaders(), ex.getStatusCode(), request);
 	}
 
 	@ExceptionHandler(TransactionSystemException.class)
