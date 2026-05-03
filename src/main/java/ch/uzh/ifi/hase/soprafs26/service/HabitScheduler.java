@@ -12,6 +12,7 @@ public class HabitScheduler {
         this.habitService = habitService;
     }
 
+    // TODO: Isnt it enough to run this once a day? Smallest we have are daily habits
     // resets completed flag for new periods and breaks overdue streaks
     @Scheduled(fixedDelay = 60 * 1000) //runs every minute
     public void resetOverdueHabits() {

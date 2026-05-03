@@ -47,6 +47,7 @@ public class RaidService {
     private final CalendarService calendarService;
     private final GroupRepository groupRepository;
     private final RaidLiveService raidLiveService;
+    private final ch.uzh.ifi.hase.soprafs26.service.CharacterLiveService characterLiveService;
 
     @Autowired
     public RaidService(BossRaidRepository bossRaidRepository,
@@ -55,7 +56,8 @@ public class RaidService {
             RaidTaskCompletionRepository raidTaskCompletionRepository,
             CalendarService calendarService,
             GroupRepository groupRepository,
-            RaidLiveService raidLiveService) {
+            RaidLiveService raidLiveService,
+            ch.uzh.ifi.hase.soprafs26.service.CharacterLiveService characterLiveService) {
         this.bossRaidRepository = bossRaidRepository;
         this.raidParticipationRepository = raidParticipationRepository;
         this.userRepository = userRepository;
@@ -64,6 +66,7 @@ public class RaidService {
         this.calendarService = calendarService;
         this.groupRepository = groupRepository;
         this.raidLiveService = raidLiveService;
+        this.characterLiveService = characterLiveService;
     }
 
     public BossRaid createRaid(Long groupId, RaidPostDTO dto) {
@@ -236,7 +239,7 @@ public class RaidService {
         User user = resolveUser(token);
 
         if (isCharacterKnockedOut(user)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Your character is dead and cannot join the raid");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Your character is knocked out and cannot join the raid!");
         }
 
         raidParticipationRepository.findByBossRaidAndUser(raid, user).ifPresent(p -> {
@@ -281,7 +284,7 @@ public class RaidService {
         completion.setSuccess(success);
         raidTaskCompletionRepository.save(completion);
 
-        if (Boolean.TRUE.equals(success)) {
+        if (success) {
             int damage = task.getSuccessfulDamage() != null ? task.getSuccessfulDamage() : 0;
             raid.applyDamage(damage);
             participation.setTasksCompleted(participation.getTasksCompleted() + 1);
@@ -339,6 +342,7 @@ public class RaidService {
                 User user = userRepository.findById(userId).orElse(null);
                 if (user == null)
                     continue;
+
                 RaidParticipation participation = raidParticipationRepository
                         .findByBossRaidAndUser(raid, user).orElse(null);
                 if (participation == null)
@@ -353,7 +357,7 @@ public class RaidService {
                 participation.setTasksFailed(participation.getTasksFailed() + 1);
                 raidParticipationRepository.save(participation);
 
-                int groupDmg = task.getGroupDamage() != null ? task.getGroupDamage() : 0;
+                int groupDmg = task.getGroupDamage();
                 if (groupDmg > 0) {
                     applyGroupDamageToMembers(raid.getId(), groupDmg);
                 }
@@ -376,12 +380,13 @@ public class RaidService {
             }
             User member = participation.getUser();
             Character character = member.getCharacter();
-            if (character == null || character.getHealth() == null) {
-                continue;
-            }
 
             character.hit(groupDamage);
             userRepository.save(member);
+            try {
+                characterLiveService.broadcastCharacterUpdate(member.getId(), character);
+            } catch (Exception ignored) {
+            }
         }
     }
 
@@ -450,25 +455,25 @@ public class RaidService {
         List<User> members = new ArrayList<>(group.getUsers());
         int size = members.size();
 
-        createQuickTask(raid, members.get(0 % size), "Make your bed",              "Tidy your bed right now",                                       HabitCategory.PHYSICAL,  80,  10, 1, 60);
-        createQuickTask(raid, members.get(1 % size), "Stretch your legs",          "Stretch both of your legs now!",                                HabitCategory.PHYSICAL,  80,  10, 1, 60);
-        createQuickTask(raid, members.get(2 % size), "Deep breathing",             "Take 10 slow deep breaths",                                     HabitCategory.EMOTIONAL, 80,  10, 1, 60);
-        createQuickTask(raid, members.get(3 % size), "Drink a glass of water",     "Finish one full glass",                                         HabitCategory.PHYSICAL,  80,  10, 1, 60);
+        createQuickTask(raid, members.get(0 % size), "Make your bed",              "Tidy your bed right now",                                       HabitCategory.PHYSICAL,  80,  1, 1, 60);
+        createQuickTask(raid, members.get(1 % size), "Stretch your legs",          "Stretch both of your legs now!",                                HabitCategory.PHYSICAL,  80,  1, 1, 60);
+        createQuickTask(raid, members.get(2 % size), "Deep breathing",             "Take 10 slow deep breaths",                                     HabitCategory.EMOTIONAL, 80,  1, 1, 60);
+        createQuickTask(raid, members.get(3 % size), "Drink a glass of water",     "Finish one full glass",                                         HabitCategory.PHYSICAL,  80,  1, 1, 60);
 
-        createQuickTask(raid, members.get(0 % size), "Desk cleanup",               "Remove clutter from your desk",                                 HabitCategory.COGNITIVE, 90,  12, 2, 60);
-        createQuickTask(raid, members.get(1 % size), "Do 10 Push-ups",             "Perform 10 push-ups",                                           HabitCategory.PHYSICAL,  90,  12, 2, 60);
-        createQuickTask(raid, members.get(2 % size), "Posture check",              "Make sure you sit and stand straight",                          HabitCategory.PHYSICAL,  90,  12, 2, 15);
-        createQuickTask(raid, members.get(3 % size), "Positivity Check",           "Write down 3 things positive about yourself",                   HabitCategory.EMOTIONAL, 90,  12, 2, 60);
+        createQuickTask(raid, members.get(0 % size), "Desk cleanup",               "Remove clutter from your desk",                                 HabitCategory.COGNITIVE, 90,  2, 2, 60);
+        createQuickTask(raid, members.get(1 % size), "Do 10 Push-ups",             "Perform 10 push-ups",                                           HabitCategory.PHYSICAL,  90,  2, 2, 60);
+        createQuickTask(raid, members.get(2 % size), "Posture check",              "Make sure you sit and stand straight",                          HabitCategory.PHYSICAL,  90,  2, 2, 15);
+        createQuickTask(raid, members.get(3 % size), "Positivity Check",           "Write down 3 things positive about yourself",                   HabitCategory.EMOTIONAL, 90,  2, 2, 60);
 
-        createQuickTask(raid, members.get(0 % size), "Gratefulness Check",         "Write down 3 things you're grateful for",                       HabitCategory.COGNITIVE, 100, 15, 3, 45);
-        createQuickTask(raid, members.get(1 % size), "Answer unread messages",     "Reply to 3 unread messages",                                    HabitCategory.COGNITIVE, 100, 15, 3, 60);
-        createQuickTask(raid, members.get(2 % size), "Refill water bottle",        "Refill and place it on your desk",                              HabitCategory.PHYSICAL,  100, 15, 3, 30);
-        createQuickTask(raid, members.get(3 % size), "One positive message",       "Send an encouraging message to someone",                        HabitCategory.EMOTIONAL, 100, 15, 3, 60);
+        createQuickTask(raid, members.get(0 % size), "Gratefulness Check",         "Write down 3 things you're grateful for",                       HabitCategory.COGNITIVE, 100, 4, 3, 45);
+        createQuickTask(raid, members.get(1 % size), "Answer unread messages",     "Reply to 3 unread messages",                                    HabitCategory.COGNITIVE, 100, 4, 3, 60);
+        createQuickTask(raid, members.get(2 % size), "Refill water bottle",        "Refill and place it on your desk",                              HabitCategory.PHYSICAL,  100, 4, 3, 30);
+        createQuickTask(raid, members.get(3 % size), "One positive message",       "Send an encouraging message to someone",                        HabitCategory.EMOTIONAL, 100, 4, 3, 60);
 
-        createQuickTask(raid, members.get(0 % size), "Plan top 3 tasks",           "List your top 3 priorities for today",                          HabitCategory.COGNITIVE, 110, 18, 4, 60);
-        createQuickTask(raid, members.get(1 % size), "Eye break",                  "Look away from the screen for 60 seconds",                      HabitCategory.EMOTIONAL, 110, 18, 4, 60);
-        createQuickTask(raid, members.get(2 % size), "10 squats",                  "Do 10 bodyweight squats",                                       HabitCategory.PHYSICAL,  110, 18, 4, 60);
-        createQuickTask(raid, members.get(3 % size), "Clear one small task",       "Complete one pending micro-task",                               HabitCategory.COGNITIVE, 110, 18, 4, 60);
+        createQuickTask(raid, members.get(0 % size), "Plan top 3 tasks",           "List your top 3 priorities for today",                          HabitCategory.COGNITIVE, 110, 5, 4, 60);
+        createQuickTask(raid, members.get(1 % size), "Eye break",                  "Look away from the screen for 60 seconds",                      HabitCategory.EMOTIONAL, 110, 5, 4, 60);
+        createQuickTask(raid, members.get(2 % size), "10 squats",                  "Do 10 bodyweight squats",                                       HabitCategory.PHYSICAL,  110, 5, 4, 60);
+        createQuickTask(raid, members.get(3 % size), "Clear one small task",       "Complete one pending micro-task",                               HabitCategory.COGNITIVE, 110, 5, 4, 60);
 
         raid.startRaid();
         bossRaidRepository.save(raid);

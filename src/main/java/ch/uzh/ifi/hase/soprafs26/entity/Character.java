@@ -132,10 +132,12 @@ public class Character implements Serializable {
     public boolean hit(Integer damage) {
         int actualDamage = Math.max(0, damage - this.resilience);
         this.health = Math.max(0, this.health - actualDamage);
-        if (this.health <= 0) {
-            resetCharacter(); // TODO: maybe instead of automatically resetting, mark as nocked out and only revive manually
-            return true;
-        }
+        
+
+        // if (this.health <= 0) {
+        //     resetCharacter(); // TODO: maybe instead of automatically resetting, mark as nocked out and only revive manually
+        //     return true;
+        // }
         return false;
     }
 

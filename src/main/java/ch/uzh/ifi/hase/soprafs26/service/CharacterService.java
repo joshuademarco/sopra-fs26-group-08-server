@@ -122,4 +122,22 @@ public class CharacterService {
         }
         return character;
     }
+
+    public Character reviveCharacter(Long userId) {
+        Character character = getCharacterByUserId(userId);
+
+        character.setLevel(1);
+        character.setExperience(0);
+        character.setMaxHealth(10);
+        character.setHealth(character.getMaxHealth());
+        character.setStrength(1);
+        character.setResilience(1);
+        character.setIntelligence(1);
+
+        characterRepository.save(character);
+        characterLiveService.broadcastCharacterUpdate(userId, character);
+
+        log.debug("Revived character for user {}", userId);
+        return character;
+    }
 }
