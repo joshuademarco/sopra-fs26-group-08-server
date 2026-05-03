@@ -20,8 +20,7 @@ import ch.uzh.ifi.hase.soprafs26.repository.HabitRepository;
 import ch.uzh.ifi.hase.soprafs26.repository.UserRepository;
 
 @Service
-@Transactional // ensures DB data integrity for habit completion & awarding XP
-               // -> rolls back if anyhting fails
+@Transactional
 public class HabitService {
     private final Logger log = LoggerFactory.getLogger(HabitService.class);
 
@@ -30,17 +29,20 @@ public class HabitService {
     private final UserRepository userRepository;
     private final CharacterService characterService;
     private final HabitCompletionEventRepository completionEventRepository;
+    private final AchievementService achievementService;
 
     public HabitService(WeatherService weatherService,
             HabitRepository habitRepository,
             UserRepository userRepository,
             CharacterService characterService,
-            HabitCompletionEventRepository completionEventRepository) {
+            HabitCompletionEventRepository completionEventRepository,
+            AchievementService achievementService) {
         this.weatherService = weatherService;
         this.habitRepository = habitRepository;
         this.userRepository = userRepository;
         this.characterService = characterService;
         this.completionEventRepository = completionEventRepository;
+        this.achievementService = achievementService;
     }
 
     // ============================== weather ==============================
@@ -78,21 +80,24 @@ public class HabitService {
         }
 
         habit.complete();
-        habit.setStreak(habit.getStreak() + 1);
+        if (isStreakContinued(habit)) {
+            habit.setStreak(habit.getStreak() + 1);
+        } else {
+            habit.setStreak(1); // reset streak
+        }
         habit.setLastCompletedAt(Instant.now());
         habitRepository.save(habit);
+        achievementService.checkHabitAchievements(userId, habit.getStreak());
 
         if (habit.getPositive()) {
             // positive habit -> award XP + update stat
             int baseXp = characterService.calculateBaseXp(habit.getWeight());
             double weatherMultiplier = getWeatherMultiplierSafely(habit.getCategory());
             int weatherCode = getWeatherCodeSafely();
-            int finalXp = characterService.awardXp(
-                    userId, habit.getCategory(), baseXp, weatherMultiplier);
+            int finalXp = characterService.awardXp(userId, habit.getCategory(), baseXp, weatherMultiplier);
 
             // record positive habit completion with XP details
-            recordCompletionEvent(habit, getUserOrThrow(userId),
-                    baseXp, finalXp, weatherMultiplier, weatherCode);
+            recordCompletionEvent(habit, getUserOrThrow(userId), baseXp, finalXp, weatherMultiplier, weatherCode);
         } else {
             // negative habit -> health penalty only, no XP + no stat increase
             characterService.applyNegativeHabitPenalty(userId, habit.getWeight());
@@ -103,6 +108,47 @@ public class HabitService {
         }
 
         return habit;
+    }
+
+    private boolean isStreakContinued(Habit habit) {
+        if (habit.getLastCompletedAt() == null) {
+            return false; // first ever completion
+        }
+
+        Instant last = habit.getLastCompletedAt();
+        Instant now = Instant.now();
+
+        long maxGapSeconds = switch (habit.getFrequency()) {
+            case DAILY -> 2L * 24 * 3600; // 1 day + 1 buffer day
+            case WEEKLY -> 8L * 24 * 3600; // 7 days + 1 buffer day
+            case MONTHLY -> 32L * 24 * 3600; // 31 days + 1 buffer day
+        };
+
+        return now.getEpochSecond() - last.getEpochSecond() <= maxGapSeconds;
+    }
+
+    public void resetOverdueHabits() {
+        Instant now = Instant.now();
+        List<Habit> overdueHabits = habitRepository.findByCompletedFalseAndDueAtBefore(now);
+
+        for (Habit habit : overdueHabits) {
+            // habit not completed before due date -> break streak
+            habit.setStreak(0);
+            // push due date forward by one period so it becomes active again
+            habit.setDueAt(calculateDueDate(habit));
+            habitRepository.save(habit);
+            log.debug("Streak reset for overdue habit '{}'", habit.getTitle());
+        }
+
+        // reset the completed flag for habits that are past due but were completed
+        List<Habit> completedPastDue = habitRepository.findByCompletedTrueAndDueAtBefore(now);
+        for (Habit habit : completedPastDue) {
+            habit.setCompleted(false);
+            habit.setCompletedAt(null);
+            habit.setDueAt(calculateDueDate(habit));
+            habitRepository.save(habit);
+            log.debug("Reset completed habit '{}' for new period", habit.getTitle());
+        }
     }
 
     public void deleteHabit(Long habitId, Long userId) {
@@ -116,7 +162,6 @@ public class HabitService {
     }
 
     // helper methods
-
     private void recordCompletionEvent(Habit habit, User user,
             int baseXp, int multipliedXp,
             double weatherMultiplier, int weatherCode) {

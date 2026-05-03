@@ -2,12 +2,14 @@ package ch.uzh.ifi.hase.soprafs26.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import ch.uzh.ifi.hase.soprafs26.constant.AchievementKey;
 import ch.uzh.ifi.hase.soprafs26.constant.HabitCategory;
 import ch.uzh.ifi.hase.soprafs26.entity.Character;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
@@ -20,11 +22,13 @@ public class CharacterService {
     private final Logger log = LoggerFactory.getLogger(CharacterService.class);
     private final CharacterRepository characterRepository;
     private final CharacterLiveService characterLiveService;
+    private final AchievementService achievementService;
 
     public CharacterService(@Qualifier("characterRepository") CharacterRepository characterRepository,
-            CharacterLiveService characterLiveService) {
+            CharacterLiveService characterLiveService, @Lazy AchievementService achievementService) {
         this.characterRepository = characterRepository;
         this.characterLiveService = characterLiveService;
+        this.achievementService = achievementService;
     }
 
     public Character createCharacter(User user) {
@@ -72,7 +76,19 @@ public class CharacterService {
         // level up and stats are handled in Character.java
         character.addExperience(finalXp);
         character.increaseStat(category);
-
+        // map habit category to respective achivement key
+        AchievementKey statKey = switch (category) {
+            case PHYSICAL -> AchievementKey.STRENGTH_25;
+            case COGNITIVE -> AchievementKey.INTELLIGENCE_25;
+            case EMOTIONAL -> AchievementKey.RESILIENCE_25;
+        };
+        // read updated stat value for achievement awarding
+        int newStat = switch (category) {
+            case PHYSICAL -> character.getStrength();
+            case COGNITIVE -> character.getIntelligence();
+            case EMOTIONAL -> character.getResilience();
+        };
+        achievementService.checkStatAchievements(userId, statKey, newStat);
         characterRepository.save(character);
         characterLiveService.broadcastCharacterUpdate(userId, character);
 

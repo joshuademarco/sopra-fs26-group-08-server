@@ -27,6 +27,8 @@ import static org.mockito.Mockito.*;
 public class HabitServiceTest {
 
     @Mock
+    private AchievementService achievementService;
+    @Mock
     private WeatherService weatherService;
     @Mock
     private HabitRepository habitRepository;

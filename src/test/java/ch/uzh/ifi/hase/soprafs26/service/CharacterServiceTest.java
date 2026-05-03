@@ -20,6 +20,9 @@ public class CharacterServiceTest {
     @Mock
     private CharacterRepository characterRepository;
 
+    @Mock
+    private AchievementService achievementService;
+
     @InjectMocks
     private CharacterService characterService;
 

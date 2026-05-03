@@ -7,10 +7,12 @@ import org.mapstruct.factory.Mappers;
 
 import ch.uzh.ifi.hase.soprafs26.entity.BossRaid;
 import ch.uzh.ifi.hase.soprafs26.entity.Character;
+import ch.uzh.ifi.hase.soprafs26.entity.CharacterAchievement;
 import ch.uzh.ifi.hase.soprafs26.entity.Group;
 import ch.uzh.ifi.hase.soprafs26.entity.Habit;
 import ch.uzh.ifi.hase.soprafs26.entity.Todo;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.AchievementGetDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.CharacterGetDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.GroupGetDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.GroupPostDTO;
@@ -114,6 +116,13 @@ public interface DTOMapper {
 	@Mapping(source = "createdAt", target = "createdAt")
 	@Mapping(source = "users", target = "users")
 	GroupGetDTO convertEntityToGroupGetDTO(Group group);
+
+    @Mapping(source = "achievement.key", target = "key")
+    @Mapping(source = "achievement.name", target = "name")
+    @Mapping(source = "achievement.description", target = "description")
+    @Mapping(source = "achievement.icon", target = "icon")
+    @Mapping(source = "earnedAt", target = "earnedAt")
+    AchievementGetDTO convertEntityToAchievementGetDTO(CharacterAchievement characterAchievement);
 
     @Mapping(source = "name", target = "name")
     @Mapping(source = "durationSeconds", target = "durationSeconds")
