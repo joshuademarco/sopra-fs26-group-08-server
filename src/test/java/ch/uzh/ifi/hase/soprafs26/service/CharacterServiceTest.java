@@ -23,6 +23,9 @@ public class CharacterServiceTest {
     @Mock
     private AchievementService achievementService;
 
+    @Mock
+    private CharacterLiveService characterLiveService;
+
     @InjectMocks
     private CharacterService characterService;
 

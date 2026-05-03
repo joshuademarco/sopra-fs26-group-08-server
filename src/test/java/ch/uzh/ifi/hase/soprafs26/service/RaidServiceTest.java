@@ -18,6 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import ch.uzh.ifi.hase.soprafs26.constant.RaidStatus;
 import ch.uzh.ifi.hase.soprafs26.entity.*;
+import ch.uzh.ifi.hase.soprafs26.entity.Character;
 import ch.uzh.ifi.hase.soprafs26.repository.*;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.FreeSlotGetDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.RaidPostDTO;
@@ -42,6 +43,8 @@ public class RaidServiceTest {
     private GroupRepository groupRepository;
     @Mock
     private RaidLiveService raidLiveService;
+    @Mock
+    private CharacterLiveService characterLiveService;
 
     @InjectMocks
     private RaidService raidService;
@@ -59,6 +62,10 @@ public class RaidServiceTest {
         user = new User();
         user.setId(1L);
         user.setToken("token");
+        Character character = new Character();
+        character.setHealth(100);
+        character.setMaxHealth(100);
+        user.setCharacter(character);
 
         group = new Group();
         group.setId(10L);
