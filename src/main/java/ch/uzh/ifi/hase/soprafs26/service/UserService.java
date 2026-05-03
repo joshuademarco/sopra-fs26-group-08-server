@@ -68,7 +68,7 @@ public class UserService {
 
     public User createUser(User newUser, String characterType) {
         newUser.setToken(UUID.randomUUID().toString());
-        newUser.setStatus(UserStatus.ONLINE);
+        newUser.setStatus(UserStatus.OFFLINE);
         checkIfUserExists(newUser);
         newUser.setPassword(hashPassword(newUser.getPassword()));
 

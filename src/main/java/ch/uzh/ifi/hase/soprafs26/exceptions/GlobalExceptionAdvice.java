@@ -1,3 +1,5 @@
+package ch.uzh.ifi.hase.soprafs26.exceptions;
+
 import java.util.Map;
 
 import org.slf4j.Logger;

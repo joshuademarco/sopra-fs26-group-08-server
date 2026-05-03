@@ -84,7 +84,6 @@ public class LiveService {
                 try {
                     session.close(CloseStatus.NORMAL);
                 } catch (IOException ignored) {
-                    // Ignore close errors; we still clean up server-side state.
                 }
             }
         }
@@ -145,8 +144,20 @@ public class LiveService {
         }
 
         for (WebSocketSession s : stale) {
-            unregisterSession(s);
+            closeAndUnregisterSession(s);
         }
+    }
+
+    private void closeAndUnregisterSession(WebSocketSession session) {
+        if (session != null && session.isOpen()) {
+            try {
+                session.close(CloseStatus.GOING_AWAY);
+            } catch (IOException ignored) {
+
+            }
+        }
+
+        unregisterSession(session);
     }
 
     private void setUserOffline(Long userId) {
