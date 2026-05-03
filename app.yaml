@@ -1,8 +1,12 @@
 # https://cloud.google.com/appengine/docs/the-appengine-environments#comparing_high-level_features
 # https://cloud.google.com/appengine/docs/standard
 
-runtime: java25
+runtime: java
 env: flex                    # switch to Flexible environment
+
+runtime_config:
+  operating_system: "ubuntu24"
+  runtime_version: "21"
 
 resources:
   cpu: 1
