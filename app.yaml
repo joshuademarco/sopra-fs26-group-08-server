@@ -2,7 +2,15 @@
 # https://cloud.google.com/appengine/docs/standard
 
 runtime: java17
-instance_class: F2
+env: flex                    # switch to Flexible environment
+
+resources:
+  cpu: 1
+  memory_gb: 0.5
+  disk_size_gb: 10
+
+network:
+  session_affinity: true     # needed for websockets
 
 env_variables:
   GOOGLE_CLIENT_ID: ""

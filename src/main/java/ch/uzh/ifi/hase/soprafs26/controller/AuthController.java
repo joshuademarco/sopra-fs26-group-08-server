@@ -44,6 +44,7 @@ public class AuthController {
 
         // convert internal representation of user back to API
         UserGetDTO userGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser);
+        presenceService.broadcastSnapshot();
         return ResponseEntity.status(HttpStatus.CREATED)
                 .header(HttpHeaders.SET_COOKIE, createAuthCookie(createdUser.getToken(), request).toString())
                 .body(userGetDTO);
@@ -63,8 +64,7 @@ public class AuthController {
 
     @GetMapping("/me")
     public ResponseEntity<UserGetDTO> me(@CookieValue(name = "token", required = false) String tokenCookie) {
-        String token = tokenCookie;
-        User user = userService.getUserByToken(token);
+        User user = userService.getUserByToken(tokenCookie);
         UserGetDTO userGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
         return ResponseEntity.ok(userGetDTO);
     }
@@ -72,8 +72,7 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(@CookieValue(name = "token", required = false) String tokenCookie,
             HttpServletRequest request) {
-        String token = tokenCookie;
-        User loggedOutUser = userService.logout(token);
+        User loggedOutUser = userService.logout(tokenCookie);
         presenceService.disconnectUser(loggedOutUser.getId());
         return ResponseEntity.noContent()
                 .header(HttpHeaders.SET_COOKIE, clearAuthCookie(request).toString())

@@ -2,39 +2,33 @@ package ch.uzh.ifi.hase.soprafs26.websocket;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
-import org.springframework.web.socket.PongMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import ch.uzh.ifi.hase.soprafs26.service.LiveService;
+import ch.uzh.ifi.hase.soprafs26.service.CharacterLiveService;
 import ch.uzh.ifi.hase.soprafs26.utils.WebSocketTokenResolver;
 
 @Component
-public class LiveWebSocketHandler extends TextWebSocketHandler {
+public class CharacterWebSocketHandler extends TextWebSocketHandler {
 
-    private final LiveService liveService;
+    private final CharacterLiveService characterLiveService;
 
-    public LiveWebSocketHandler(LiveService liveService) {
-        this.liveService = liveService;
+    public CharacterWebSocketHandler(CharacterLiveService characterLiveService) {
+        this.characterLiveService = characterLiveService;
     }
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         String token = WebSocketTokenResolver.resolveToken(session);
         try {
-            liveService.registerSession(session, token);
+            characterLiveService.registerSession(session, token);
         } catch (IllegalStateException exception) {
             session.close(CloseStatus.POLICY_VIOLATION);
         }
     }
 
     @Override
-    protected void handlePongMessage(WebSocketSession session, PongMessage message) {
-        liveService.handlePong(session);
-    }
-
-    @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
-        liveService.unregisterSession(session);
+        characterLiveService.unregisterSession(session);
     }
 }

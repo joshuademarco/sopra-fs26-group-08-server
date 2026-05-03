@@ -10,14 +10,23 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 public class WebSocketConfig implements WebSocketConfigurer {
 
     private final LiveWebSocketHandler presenceWebSocketHandler;
+    private final RaidWebSocketHandler raidWebSocketHandler;
+    private final CharacterWebSocketHandler characterWebSocketHandler;
 
-    public WebSocketConfig(LiveWebSocketHandler presenceWebSocketHandler) {
+    public WebSocketConfig(LiveWebSocketHandler presenceWebSocketHandler, RaidWebSocketHandler raidWebSocketHandler,
+            CharacterWebSocketHandler characterWebSocketHandler) {
         this.presenceWebSocketHandler = presenceWebSocketHandler;
+        this.raidWebSocketHandler = raidWebSocketHandler;
+        this.characterWebSocketHandler = characterWebSocketHandler;
     }
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(presenceWebSocketHandler, "/ws/presence")
-            .setAllowedOriginPatterns("*");
+                .setAllowedOriginPatterns("*");
+        registry.addHandler(raidWebSocketHandler, "/ws/raid")
+                .setAllowedOriginPatterns("*");
+        registry.addHandler(characterWebSocketHandler, "/ws/character")
+                .setAllowedOriginPatterns("*");
     }
 }
