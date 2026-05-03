@@ -70,10 +70,7 @@ public class UserService {
         newUser.setToken(UUID.randomUUID().toString());
         newUser.setStatus(UserStatus.ONLINE);
         checkIfUserExists(newUser);
-		newUser.setPassword(hashPassword(newUser.getPassword()));
-
-        newUser.setHealth(100);
-        newUser.setMaxHealth(100);
+        newUser.setPassword(hashPassword(newUser.getPassword()));
 
         // saves the given entity but data is only persisted in the database once
         // flush() is called
@@ -107,33 +104,33 @@ public class UserService {
         }
     }
 
-	private String hashPassword(String password) {
-		try {
-			MessageDigest digest = MessageDigest.getInstance("SHA-256");
-			byte[] hash = digest.digest(password.getBytes());
-			StringBuilder hexString = new StringBuilder();
-			for (byte b : hash) {
-				String hex = Integer.toHexString(0xff & b);
-				if (hex.length() == 1) hexString.append('0');
-				hexString.append(hex);
-			}
-			return hexString.toString();
-		} catch (NoSuchAlgorithmException e) {
-			throw new RuntimeException("SHA-256 algorithm not found", e);
-		}
-	}
+    private String hashPassword(String password) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(password.getBytes());
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1)
+                    hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-256 algorithm not found", e);
+        }
+    }
 
-	public User login(String email, String password) {
-		User user = userRepository.findByEmail(email);
-		// hash the input password to compare with stored hash
-		if (user == null || !user.getPassword().equals(hashPassword(password))) {
-			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
-		}
-		user.setStatus(UserStatus.ONLINE);
-		user.setOnline(true);
-		userRepository.saveAndFlush(user);
-		return user;
-	}
+    public User login(String email, String password) {
+        User user = userRepository.findByEmail(email);
+        // hash the input password to compare with stored hash
+        if (user == null || !user.getPassword().equals(hashPassword(password))) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
+        }
+        user.setStatus(UserStatus.ONLINE);
+        userRepository.saveAndFlush(user);
+        return user;
+    }
 
     public User getUserByToken(String token) {
         if (token == null || token.isBlank()) {
@@ -155,7 +152,6 @@ public class UserService {
         }
 
         user.setStatus(UserStatus.OFFLINE);
-        user.setOnline(false);
         user.setToken(UUID.randomUUID().toString());
         userRepository.saveAndFlush(user);
         return user;
@@ -171,7 +167,8 @@ public class UserService {
                     if (levelCompare != 0) {
                         return levelCompare;
                     }
-                    int experienceCompare = Integer.compare(u2.getCharacter().getExperience(), u1.getCharacter().getExperience());
+                    int experienceCompare = Integer.compare(u2.getCharacter().getExperience(),
+                            u1.getCharacter().getExperience());
                     if (experienceCompare != 0) {
                         return experienceCompare;
                     }

@@ -83,7 +83,7 @@ public class HabitService {
         habitRepository.save(habit);
 
         if (habit.getPositive()) {
-            // positive habit -> award XP + update stat 
+            // positive habit -> award XP + update stat
             int baseXp = characterService.calculateBaseXp(habit.getWeight());
             double weatherMultiplier = getWeatherMultiplierSafely(habit.getCategory());
             int weatherCode = getWeatherCodeSafely();

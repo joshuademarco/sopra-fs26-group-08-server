@@ -60,15 +60,6 @@ public class User implements Serializable {
     @Column(nullable = false)
     private UserStatus status;
 
-    @Column(nullable = false)
-    private boolean online;
-
-    @Column
-    private Integer health;
-
-    @Column
-    private Integer maxHealth;
-
     @PrePersist
     protected void onCreate() {
         Instant now = Instant.now();
@@ -159,16 +150,6 @@ public class User implements Serializable {
 
     public void setStatus(UserStatus status) {
         this.status = status;
-        this.online = status == UserStatus.ONLINE;
-    }
-
-    public boolean isOnline() {
-        return online;
-    }
-
-    public void setOnline(boolean online) {
-        this.online = online;
-        this.status = online ? UserStatus.ONLINE : UserStatus.OFFLINE;
     }
 
     public Character getCharacter() { 
@@ -197,21 +178,5 @@ public class User implements Serializable {
     public void removeGroup(Group group) {
         this.groups.remove(group);
         group.getUsers().remove(this);
-    }
-
-    public Integer getHealth() { 
-        return health; 
-    }
-
-    public void setHealth(Integer health) { 
-        this.health = health; 
-    }
-
-    public Integer getMaxHealth() { 
-        return maxHealth; 
-    }
-
-    public void setMaxHealth(Integer maxHealth) { 
-        this.maxHealth = maxHealth; 
     }
 }

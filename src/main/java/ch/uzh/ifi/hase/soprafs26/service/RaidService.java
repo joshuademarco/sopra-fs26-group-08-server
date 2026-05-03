@@ -18,6 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 import ch.uzh.ifi.hase.soprafs26.constant.HabitCategory;
 import ch.uzh.ifi.hase.soprafs26.constant.RaidStatus;
 import ch.uzh.ifi.hase.soprafs26.entity.BossRaid;
+import ch.uzh.ifi.hase.soprafs26.entity.Character;
 import ch.uzh.ifi.hase.soprafs26.entity.Group;
 import ch.uzh.ifi.hase.soprafs26.entity.RaidParticipation;
 import ch.uzh.ifi.hase.soprafs26.entity.RaidTask;
@@ -45,7 +46,7 @@ public class RaidService {
     private final RaidTaskCompletionRepository raidTaskCompletionRepository;
     private final CalendarService calendarService;
     private final GroupRepository groupRepository;
-    private final LiveService liveService;
+    private final RaidLiveService raidLiveService;
 
     @Autowired
     public RaidService(BossRaidRepository bossRaidRepository,
@@ -54,7 +55,7 @@ public class RaidService {
             RaidTaskCompletionRepository raidTaskCompletionRepository,
             CalendarService calendarService,
             GroupRepository groupRepository,
-            LiveService liveService) {
+            RaidLiveService raidLiveService) {
         this.bossRaidRepository = bossRaidRepository;
         this.raidParticipationRepository = raidParticipationRepository;
         this.userRepository = userRepository;
@@ -62,7 +63,7 @@ public class RaidService {
         this.raidTaskCompletionRepository = raidTaskCompletionRepository;
         this.calendarService = calendarService;
         this.groupRepository = groupRepository;
-        this.liveService = liveService;
+        this.raidLiveService = raidLiveService;
     }
 
     public BossRaid createRaid(Long groupId, RaidPostDTO dto) {
@@ -131,15 +132,18 @@ public class RaidService {
                 RaidMemberDTO member = new RaidMemberDTO();
                 member.setUserId(user.getId());
                 member.setUsername(user.getUsername());
-                member.setOnline(user.isOnline());
+                member.setOnline(user.getStatus());
+                
                 RaidParticipation p = participationByUserId.get(user.getId());
                 member.setJoined(p != null);
                 member.setTasksCompleted(p != null ? p.getTasksCompleted() : 0);
-                member.setTasksFailed(p != null ? p.getTasksFailed() : 0);
-                member.setDamageDealt(p != null ? p.getDamageDealt() : 0);
-                member.setHealth(user.getHealth());
-                member.setMaxHealth(user.getMaxHealth());
-                member.setCharacterType(user.getCharacter() != null ? user.getCharacter().getType() : null);
+                member.setTasksFailed(p.getTasksFailed());
+                member.setDamageDealt(p.getDamageDealt());
+
+                Character character = user.getCharacter();
+                member.setHealth(character.getHealth());
+                member.setMaxHealth(character.getMaxHealth());
+                member.setCharacterType(character.getType());
                 members.add(member);
             }
             dto.setUsers(members);
@@ -204,6 +208,11 @@ public class RaidService {
         }
     }
 
+    private boolean isCharacterKnockedOut(User user) {
+        Character character = user.getCharacter();
+        return character != null && character.getHealth() != null && character.getHealth() <= 0;
+    }
+
     public void expireActiveRaids() {
         List<BossRaid> active = bossRaidRepository.findByStatus(RaidStatus.ACTIVE);
         Instant now = Instant.now();
@@ -225,6 +234,10 @@ public class RaidService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Raid not found"));
 
         User user = resolveUser(token);
+
+        if (isCharacterKnockedOut(user)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Your character is dead and cannot join the raid");
+        }
 
         raidParticipationRepository.findByBossRaidAndUser(raid, user).ifPresent(p -> {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Already joined this raid");
@@ -254,6 +267,10 @@ public class RaidService {
         RaidParticipation participation = raidParticipationRepository.findByBossRaidAndUser(raid, user)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Not participating in this raid"));
 
+        if (isCharacterKnockedOut(user)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Your character is knocked out for this raid");
+        }
+
         raidTaskCompletionRepository.findByRaidTaskAndParticipation(task, participation).ifPresent(c -> {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Task already completed");
         });
@@ -277,6 +294,10 @@ public class RaidService {
             }
         }
         raidParticipationRepository.save(participation);
+
+        if (raid.getStatus() == RaidStatus.ACTIVE && allParticipantsKnockedOut(raid)) {
+            raid.endRaid(RaidStatus.FAILED);
+        }
         bossRaidRepository.save(raid);
 
         broadcastRaidUpdate(raid);
@@ -337,6 +358,11 @@ public class RaidService {
                     applyGroupDamageToMembers(raid.getId(), groupDmg);
                 }
 
+                if (raid.getStatus() == RaidStatus.ACTIVE && allParticipantsKnockedOut(raid)) {
+                    raid.endRaid(RaidStatus.FAILED);
+                    bossRaidRepository.save(raid);
+                }
+
                 broadcastRaidUpdate(raid);
             }
         }
@@ -345,18 +371,35 @@ public class RaidService {
     private void applyGroupDamageToMembers(Long raidId, int groupDamage) {
         List<RaidParticipation> participations = raidParticipationRepository.findByBossRaidId(raidId);
         for (RaidParticipation participation : participations) {
+            if (isCharacterKnockedOut(participation.getUser())) {
+                continue;
+            }
             User member = participation.getUser();
-            if (member.getHealth() == null) {
+            Character character = member.getCharacter();
+            if (character == null || character.getHealth() == null) {
                 continue;
             }
 
-            member.setHealth(Math.max(0, member.getHealth() - groupDamage));
+            character.hit(groupDamage);
             userRepository.save(member);
         }
     }
 
+    private boolean allParticipantsKnockedOut(BossRaid raid) {
+        List<RaidParticipation> participations = raidParticipationRepository.findByBossRaidId(raid.getId());
+        if (participations.isEmpty()) {
+            return false;
+        }
+        for (RaidParticipation p : participations) {
+            if (!isCharacterKnockedOut(p.getUser())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private void broadcastRaidUpdate(BossRaid raid) {
-        liveService.broadcastRaidUpdate(
+        raidLiveService.broadcastRaidUpdate(
                 raid.getId(),
                 raid.getGroup().getId(),
                 raid.getHealth(),
@@ -370,8 +413,9 @@ public class RaidService {
         for (User user : raid.getGroup().getUsers()) {
             RaidMemberDTO m = new RaidMemberDTO();
             m.setUserId(user.getId());
-            m.setHealth(user.getHealth());
-            m.setMaxHealth(user.getMaxHealth());
+            Character character = user.getCharacter();
+            m.setHealth(character.getHealth());
+            m.setMaxHealth(character.getMaxHealth());
             snapshot.add(m);
         }
         return snapshot;

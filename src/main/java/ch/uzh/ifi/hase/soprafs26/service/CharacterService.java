@@ -19,9 +19,12 @@ public class CharacterService {
 
     private final Logger log = LoggerFactory.getLogger(CharacterService.class);
     private final CharacterRepository characterRepository;
+    private final CharacterLiveService characterLiveService;
 
-    public CharacterService(@Qualifier("characterRepository") CharacterRepository characterRepository) {
+    public CharacterService(@Qualifier("characterRepository") CharacterRepository characterRepository,
+            CharacterLiveService characterLiveService) {
         this.characterRepository = characterRepository;
+        this.characterLiveService = characterLiveService;
     }
 
     public Character createCharacter(User user) {
@@ -71,6 +74,7 @@ public class CharacterService {
         character.increaseStat(category);
 
         characterRepository.save(character);
+        characterLiveService.broadcastCharacterUpdate(userId, character);
 
         log.debug("Awarded {} XP (base: {}, multiplier: {}) to user {}",
                 finalXp, baseXp, weatherMultiplier, userId);
@@ -82,6 +86,7 @@ public class CharacterService {
         Character character = getCharacterByUserId(userId);
         character.applyNegativeHabitPenalty(weight);
         characterRepository.save(character);
+        characterLiveService.broadcastCharacterUpdate(userId, character);
         log.debug("Applied negative habit penalty (weight={}) to user {}", weight, userId);
     }
 

@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ch.uzh.ifi.hase.soprafs26.constant.HabitCategory;
 import ch.uzh.ifi.hase.soprafs26.constant.HabitFrequency;
 import ch.uzh.ifi.hase.soprafs26.constant.RaidStatus;
+import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs26.entity.BossRaid;
 import ch.uzh.ifi.hase.soprafs26.entity.Group;
 import ch.uzh.ifi.hase.soprafs26.entity.Habit;
@@ -112,6 +113,7 @@ public class Seeder implements ApplicationRunner {
         user.setUsername(username);
         user.setEmail(email);
         user.setPassword(password);
+        user.setStatus(UserStatus.OFFLINE);
 
         if (group != null) {
             user.addGroup(group);
