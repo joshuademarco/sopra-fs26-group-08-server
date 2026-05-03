@@ -137,8 +137,8 @@ public class RaidService {
                 RaidParticipation p = participationByUserId.get(user.getId());
                 member.setJoined(p != null);
                 member.setTasksCompleted(p != null ? p.getTasksCompleted() : 0);
-                member.setTasksFailed(p.getTasksFailed());
-                member.setDamageDealt(p.getDamageDealt());
+                member.setTasksFailed(p != null ? p.getTasksFailed() : 0);
+                member.setDamageDealt(p != null ? p.getDamageDealt() : 0);
 
                 Character character = user.getCharacter();
                 member.setHealth(character.getHealth());
