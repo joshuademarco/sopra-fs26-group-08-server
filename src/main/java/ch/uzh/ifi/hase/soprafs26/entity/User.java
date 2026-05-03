@@ -46,7 +46,7 @@ public class User implements Serializable {
     @Column(nullable = false, unique = true)
     private String token;
 
-    //cascade -> when a user is deleted, the related character is also deleted
+    // cascade -> when a user is deleted, the related character is also deleted
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Character character;
 
@@ -83,12 +83,13 @@ public class User implements Serializable {
 
     @JsonIgnore
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-        name = "user_groups",
-        joinColumns = @JoinColumn(name = "user_id"),
-        inverseJoinColumns = @JoinColumn(name = "group_id")
-    )
+    @JoinTable(name = "user_groups", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "group_id"))
     private Set<Group> groups = new HashSet<>();
+
+    @JsonIgnore
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "user_items", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "item_id"))
+    private Set<Item> inventory = new HashSet<>();
 
     public void updateProfile(String username, String email) {
 
@@ -171,20 +172,20 @@ public class User implements Serializable {
         this.status = online ? UserStatus.ONLINE : UserStatus.OFFLINE;
     }
 
-    public Character getCharacter() { 
-        return character; 
+    public Character getCharacter() {
+        return character;
     }
 
-    public void setCharacter(Character character) { 
-        this.character = character; 
+    public void setCharacter(Character character) {
+        this.character = character;
     }
 
-    public Set<Group> getGroups() { 
-        return groups; 
+    public Set<Group> getGroups() {
+        return groups;
     }
 
-    public void setGroups(Set<Group> groups) { 
-        this.groups = groups; 
+    public void setGroups(Set<Group> groups) {
+        this.groups = groups;
     }
 
     public void addGroup(Group group) {
@@ -199,19 +200,35 @@ public class User implements Serializable {
         group.getUsers().remove(this);
     }
 
-    public Integer getHealth() { 
-        return health; 
+    public Set<Item> getInventory() {
+        return inventory;
     }
 
-    public void setHealth(Integer health) { 
-        this.health = health; 
+    public void setInventory(Set<Item> inventory) {
+        this.inventory = inventory;
     }
 
-    public Integer getMaxHealth() { 
-        return maxHealth; 
+    public void addItem(Item item) {
+        this.inventory.add(item);
     }
 
-    public void setMaxHealth(Integer maxHealth) { 
-        this.maxHealth = maxHealth; 
+    public boolean hasItem(Item item) {
+        return this.inventory.contains(item);
+    }
+
+    public Integer getHealth() {
+        return health;
+    }
+
+    public void setHealth(Integer health) {
+        this.health = health;
+    }
+
+    public Integer getMaxHealth() {
+        return maxHealth;
+    }
+
+    public void setMaxHealth(Integer maxHealth) {
+        this.maxHealth = maxHealth;
     }
 }

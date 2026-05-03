@@ -10,6 +10,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
@@ -61,6 +62,18 @@ public class Character implements Serializable {
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
 
+    @ManyToOne
+    @JoinColumn(name = "equipped_hat_id")
+    private Item equippedHat;
+
+    @ManyToOne
+    @JoinColumn(name = "equipped_handheld_id")
+    private Item equippedHandheld;
+
+    @ManyToOne
+    @JoinColumn(name = "equipped_chestpiece_id")
+    private Item equippedChestPiece;
+
     public Character() {
     }
 
@@ -107,13 +120,17 @@ public class Character implements Serializable {
 
     public void applyNegativeHabitPenalty(Integer weight) {
         int damage;
-        if (weight == null || weight < 1) damage = 1;  // default easy
-        else if (weight == 1) damage = 1;  // easy
-        else if (weight == 2) damage = 2;  // medium
-        else damage = 3;  // hard
-        
+        if (weight == null || weight < 1)
+            damage = 1; // default easy
+        else if (weight == 1)
+            damage = 1; // easy
+        else if (weight == 2)
+            damage = 2; // medium
+        else
+            damage = 3; // hard
+
         this.health = Math.max(0, this.health - damage);
-        // if health drops to 0 -> completly reset character 
+        // if health drops to 0 -> completly reset character
         if (this.health <= 0) {
             resetCharacter();
         }
@@ -229,10 +246,34 @@ public class Character implements Serializable {
 
     public User getUser() {
         return user;
-
     }
 
     public void setUser(User user) {
         this.user = user;
     }
+
+    public Item getEquippedHat() {
+        return equippedHat;
+    }
+
+    public void setEquippedHat(Item equippedHat) {
+        this.equippedHat = equippedHat;
+    }
+
+    public Item getEquippedHandheld() {
+        return equippedHandheld;
+    }
+
+    public void setEquippedHandheld(Item equippedHandheld) {
+        this.equippedHandheld = equippedHandheld;
+    }
+
+    public Item getEquippedChestPiece() {
+        return equippedChestPiece;
+    }
+
+    public void setEquippedChestPiece(Item equippedChestPiece) {
+        this.equippedChestPiece = equippedChestPiece;
+    }
+
 }

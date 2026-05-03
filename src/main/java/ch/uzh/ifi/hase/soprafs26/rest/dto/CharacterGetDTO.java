@@ -11,82 +11,111 @@ public class CharacterGetDTO {
     private Integer intelligence;
     private String skinColor;
     private String type;
+    private ItemGetDTO equippedHat;
+    private ItemGetDTO equippedChestPiece;
+    private ItemGetDTO equippedHandheld;
 
-    public Long getId() { 
-        return id; 
-    }
-
-    public void setId(Long id) { 
-        this.id = id; 
-    }
-
-    public Integer getLevel() { 
-        return level; 
+    public Long getId() {
+        return id;
     }
 
-    public void setLevel(Integer level) { 
-        this.level = level; 
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public Integer getHealth() { 
-        return health; 
+    public Integer getLevel() {
+        return level;
     }
 
-    public void setHealth(Integer health) { 
-        this.health = health; 
-    }
-    public Integer getMaxHealth() { 
-        return maxHealth; 
-    }
-    public void setMaxHealth(Integer maxHealth) { 
-        this.maxHealth = maxHealth; 
+    public void setLevel(Integer level) {
+        this.level = level;
     }
 
-    public Integer getExperience() { 
-        return experience; 
+    public Integer getHealth() {
+        return health;
     }
 
-    public void setExperience(Integer experience) { 
-        this.experience = experience; 
+    public void setHealth(Integer health) {
+        this.health = health;
     }
 
-    public Integer getStrength() { 
-        return strength; 
+    public Integer getMaxHealth() {
+        return maxHealth;
     }
 
-    public void setStrength(Integer strength) { 
-        this.strength = strength; 
+    public void setMaxHealth(Integer maxHealth) {
+        this.maxHealth = maxHealth;
     }
 
-    public Integer getResilience() { 
-        return resilience; 
+    public Integer getExperience() {
+        return experience;
     }
 
-    public void setResilience(Integer resilience) { 
-        this.resilience = resilience; 
+    public void setExperience(Integer experience) {
+        this.experience = experience;
     }
 
-    public Integer getIntelligence() { 
-        return intelligence; 
+    public Integer getStrength() {
+        return strength;
     }
 
-    public void setIntelligence(Integer intelligence) { 
-        this.intelligence = intelligence; 
+    public void setStrength(Integer strength) {
+        this.strength = strength;
     }
 
-    public String getSkinColor() { 
-        return skinColor; 
+    public Integer getResilience() {
+        return resilience;
     }
 
-    public void setSkinColor(String skinColor) { 
-        this.skinColor = skinColor; 
+    public void setResilience(Integer resilience) {
+        this.resilience = resilience;
     }
 
-    public String getType() { 
-        return type; 
+    public Integer getIntelligence() {
+        return intelligence;
     }
 
-    public void setType(String type) { 
-        this.type = type; 
+    public void setIntelligence(Integer intelligence) {
+        this.intelligence = intelligence;
+    }
+
+    public String getSkinColor() {
+        return skinColor;
+    }
+
+    public void setSkinColor(String skinColor) {
+        this.skinColor = skinColor;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public ItemGetDTO getEquippedHat() {
+        return equippedHat;
+    }
+
+    public void setEquippedHat(ItemGetDTO equippedHat) {
+        this.equippedHat = equippedHat;
+    }
+
+    public ItemGetDTO getEquippedChestPiece() {
+        return equippedChestPiece;
+    }
+
+    public void setEquippedChestPiece(ItemGetDTO equippedChestPiece) {
+        this.equippedChestPiece = equippedChestPiece;
+    }
+
+    public ItemGetDTO getEquippedHandheld() {
+        return equippedHandheld;
+    }
+
+    public void setEquippedHandheld(ItemGetDTO equippedHandheld) {
+        this.equippedHandheld = equippedHandheld;
     }
 }

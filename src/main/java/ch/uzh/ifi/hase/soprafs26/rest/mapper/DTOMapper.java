@@ -10,6 +10,7 @@ import ch.uzh.ifi.hase.soprafs26.entity.Character;
 import ch.uzh.ifi.hase.soprafs26.entity.CharacterAchievement;
 import ch.uzh.ifi.hase.soprafs26.entity.Group;
 import ch.uzh.ifi.hase.soprafs26.entity.Habit;
+import ch.uzh.ifi.hase.soprafs26.entity.Item;
 import ch.uzh.ifi.hase.soprafs26.entity.Todo;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.AchievementGetDTO;
@@ -18,6 +19,7 @@ import ch.uzh.ifi.hase.soprafs26.rest.dto.GroupGetDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.GroupPostDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.HabitGetDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.HabitPostDTO;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.ItemGetDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.RaidGetDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.RaidPostDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.TodoGetDTO;
@@ -57,6 +59,9 @@ public interface DTOMapper {
     @Mapping(source = "intelligence", target = "intelligence")
     @Mapping(source = "skinColor", target = "skinColor")
     @Mapping(source = "type", target = "type")
+    @Mapping(source = "equippedHat", target = "equippedHat")
+    @Mapping(source = "equippedChestPiece", target = "equippedChestPiece")
+    @Mapping(source = "equippedHandheld", target = "equippedHandheld")
     CharacterGetDTO convertEntityToCharacterGetDTO(Character character);
 
     @Mapping(source = "id", target = "id")
@@ -137,4 +142,10 @@ public interface DTOMapper {
     @Mapping(source = "maxHealth", target = "maxHealth")
     @Mapping(source = "durationSeconds", target = "durationSeconds")
     RaidGetDTO convertEntityToRaidGetDTO(BossRaid bossRaid);
+
+    @Mapping(source = "id", target = "id")
+    @Mapping(source = "name", target = "name")
+    @Mapping(source = "assetKey", target = "assetKey")
+    @Mapping(source = "itemType", target = "itemType")
+    ItemGetDTO convertEntityToItemGetDTO(Item item);
 }
