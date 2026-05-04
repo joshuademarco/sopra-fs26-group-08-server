@@ -15,6 +15,7 @@ public class Application {
 
 	public static final String[] ALLOWED_ORIGINS = {
 		"https://bettertogeter.ch",
+		"https://www.bettertogeter.ch",
 		"http://localhost:3000",
 	};
 
