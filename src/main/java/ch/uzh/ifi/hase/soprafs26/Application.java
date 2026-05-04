@@ -13,10 +13,14 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @EnableScheduling
 public class Application {
 
+	public static final String[] ALLOWED_ORIGINS = {
+		"https://bettertogeter.ch",
+		"http://localhost:3000",
+	};
+
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
 	}
-
 
 	@Bean
 	public WebMvcConfigurer corsConfigurer() {
@@ -24,7 +28,7 @@ public class Application {
 			@Override
 			public void addCorsMappings(CorsRegistry registry) {
 				registry.addMapping("/**")
-						.allowedOriginPatterns("*")
+						.allowedOrigins(ALLOWED_ORIGINS)
 						.allowCredentials(true)
 						.allowedMethods("*")
 						.allowedHeaders("*")

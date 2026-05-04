@@ -5,6 +5,8 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 
+import ch.uzh.ifi.hase.soprafs26.Application;
+
 @Configuration
 @EnableWebSocket
 public class WebSocketConfig implements WebSocketConfigurer {
@@ -23,10 +25,10 @@ public class WebSocketConfig implements WebSocketConfigurer {
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(presenceWebSocketHandler, "/ws/presence")
-                .setAllowedOriginPatterns("*");
+                .setAllowedOrigins(Application.ALLOWED_ORIGINS);
         registry.addHandler(raidWebSocketHandler, "/ws/raid")
-                .setAllowedOriginPatterns("*");
+                .setAllowedOrigins(Application.ALLOWED_ORIGINS);
         registry.addHandler(characterWebSocketHandler, "/ws/character")
-                .setAllowedOriginPatterns("*");
+                .setAllowedOrigins(Application.ALLOWED_ORIGINS);
     }
 }

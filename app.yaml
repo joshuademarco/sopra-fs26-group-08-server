@@ -19,5 +19,6 @@ network:
 env_variables:
   GOOGLE_CLIENT_ID: ""
   GOOGLE_CLIENT_SECRET: ""
-  GOOGLE_REDIRECT_URI: "https://grounded-jetty-490810-t0.oa.r.appspot.com/api/calendar/callback"
-  FRONTEND_REDIRECT_URI: "https://sopra-fs26-group-08-client.vercel.app/"
+  GOOGLE_REDIRECT_URI: "https://api.bettertogeter.ch/api/calendar/callback"
+  FRONTEND_REDIRECT_URI: "https://bettertogeter.ch/"
+  APP_COOKIE_DOMAIN: "bettertogeter.ch"

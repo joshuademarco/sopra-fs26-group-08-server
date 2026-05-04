@@ -2,6 +2,7 @@ package ch.uzh.ifi.hase.soprafs26.controller;
 
 import java.time.Duration;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -37,6 +38,9 @@ public class AuthController {
 
     private final UserService userService;
     private final LiveService presenceService;
+
+    @Value("${app.cookie.domain:}")
+    private String cookieDomain;
 
     AuthController(UserService userService, LiveService liveService) {
         this.userService = userService;
@@ -108,26 +112,32 @@ public class AuthController {
         boolean secure = isSecureRequest(request);
         String sameSite = secure ? "None" : "Lax";
 
-        return ResponseCookie.from("token", token)
+        ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from("token", token)
                 .httpOnly(true)
                 .secure(secure)
                 .sameSite(sameSite)
                 .path("/")
-                .maxAge(Duration.ofDays(7))
-                .build();
+                .maxAge(Duration.ofDays(7));
+        if (cookieDomain != null && !cookieDomain.isBlank()) {
+            builder.domain(cookieDomain);
+        }
+        return builder.build();
     }
 
     private ResponseCookie clearAuthCookie(HttpServletRequest request) {
         boolean secure = isSecureRequest(request);
         String sameSite = secure ? "None" : "Lax";
 
-        return ResponseCookie.from("token", "")
+        ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from("token", "")
                 .httpOnly(true)
                 .secure(secure)
                 .sameSite(sameSite)
                 .path("/")
-                .maxAge(0)
-                .build();
+                .maxAge(0);
+        if (cookieDomain != null && !cookieDomain.isBlank()) {
+            builder.domain(cookieDomain);
+        }
+        return builder.build();
     }
 
     private boolean isSecureRequest(HttpServletRequest request) {
