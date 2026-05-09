@@ -6,5 +6,8 @@ import jakarta.persistence.Entity;
 @Entity
 @DiscriminatorValue("HAT")
 public class Hat extends Item {
-    
+    @Override
+    public String getItemType() {
+        return "HAT";
+    }
 }
