@@ -67,6 +67,9 @@ public class UserService {
     }
 
     public User createUser(User newUser, String characterType) {
+        if (newUser.getUsername().contains(" ")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username cannot contain a white space");
+        }
         newUser.setToken(UUID.randomUUID().toString());
         newUser.setStatus(UserStatus.OFFLINE);
         checkIfUserExists(newUser);
