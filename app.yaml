@@ -19,6 +19,6 @@ network:
 env_variables:
   GOOGLE_CLIENT_ID: ""
   GOOGLE_CLIENT_SECRET: ""
-  GOOGLE_REDIRECT_URI: "https://api.bettertogeter.ch/api/calendar/callback"
+  GOOGLE_REDIRECT_URI: "https://api.bettertogeter.ch/calendar/callback"
   FRONTEND_REDIRECT_URI: "https://bettertogeter.ch/"
   APP_COOKIE_DOMAIN: ".bettertogeter.ch"

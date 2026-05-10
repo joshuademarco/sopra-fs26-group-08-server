@@ -1,6 +1,6 @@
 package ch.uzh.ifi.hase.soprafs26.controller;
 
-import java.util.stream.Collectors;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -42,11 +42,16 @@ public class HabitController {
         User requestingUser = userService.getUserByToken(token);
         verifyOwnership(requestingUser.getId(), userId);
 
-        List<Habit> habits = habitService.getHabitsForUser(userId);
+        int weatherCode = habitService.getWeatherCodeSafely();
 
-        return habits.stream()
-                .map(DTOMapper.INSTANCE::convertEntityToHabitGetDTO)
-                .collect(Collectors.toList());
+        List<Habit> habits = habitService.getHabitsForUser(userId);
+        List<HabitGetDTO> result = new ArrayList<>();
+        for (Habit habit : habits) {
+            HabitGetDTO dto = DTOMapper.INSTANCE.convertEntityToHabitGetDTO(habit);
+            dto.setMultiplier(habitService.getMultiplierForCategory(weatherCode, habit.getCategory()));
+            result.add(dto);
+        }
+        return result;
     }
 
     @PostMapping("/users/{userId}/habits")

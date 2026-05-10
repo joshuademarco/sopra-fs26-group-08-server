@@ -91,6 +91,7 @@ public interface DTOMapper {
     @Mapping(source = "dueAt", target = "dueAt")
     @Mapping(source = "createdAt", target = "createdAt")
     @Mapping(source = "completedAt", target = "completedAt")
+    @Mapping(source = "penaltyApplied", target = "penaltyApplied")
     HabitGetDTO convertEntityToHabitGetDTO(Habit habit);
 
     @Mapping(source = "title", target = "title")
