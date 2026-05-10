@@ -2,6 +2,7 @@ package ch.uzh.ifi.hase.soprafs26.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,6 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.server.ResponseStatusException;
 
 import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.ChangePasswordDTO;
@@ -100,12 +102,51 @@ public class AuthControllerTest {
         assertEquals(user.getId(), response.getBody().getId());
         assertEquals(user.getUsername(), response.getBody().getUsername());
         assertEquals(user.getEmail(), response.getBody().getEmail());
-        
+
         String setCookieHeader = response.getHeaders().getFirst(HttpHeaders.SET_COOKIE);
         assertNotNull(setCookieHeader);
         assertTrue(setCookieHeader.contains("token=testToken123"));
     }
 
+    @Test
+    public void register_duplicateUsername_throwsException() {
+        UserPostDTO userPostDTO = new UserPostDTO();
+        userPostDTO.setUsername("duplicateUser");
+        userPostDTO.setEmail("newemail@uzh.ch");
+        userPostDTO.setPassword("password123");
+        userPostDTO.setType("USER");
+
+        HttpServletRequest request = mock(HttpServletRequest.class);
+
+        given(userService.createUser(any(User.class), eq("USER")))
+                .willThrow(new org.springframework.web.server.ResponseStatusException(HttpStatus.CONFLICT, "Username already exists"));
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+            authController.register(userPostDTO, request);
+        });
+        
+        assertEquals(HttpStatus.CONFLICT, exception.getStatusCode());
+        assertEquals("Username already exists", exception.getReason());
+    }
+
+    @Test
+    public void login_invalidCredentials_throwsException() {
+        LoginPostDTO loginPostDTO = new LoginPostDTO();
+        loginPostDTO.setEmail("wrongemail@uzh.ch");
+        loginPostDTO.setPassword("wrongpassword");
+
+        HttpServletRequest request = mock(HttpServletRequest.class);
+
+        given(userService.login("wrongemail@uzh.ch", "wrongpassword"))
+                .willThrow(new org.springframework.web.server.ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials"));
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+            authController.login(loginPostDTO, request);
+        });
+        
+        assertEquals(HttpStatus.UNAUTHORIZED, exception.getStatusCode());
+        assertEquals("Invalid credentials", exception.getReason());
+    }
     @Test
     public void changePassword_validInput_passwordChanged() {
         ChangePasswordDTO changePasswordDTO = new ChangePasswordDTO();
