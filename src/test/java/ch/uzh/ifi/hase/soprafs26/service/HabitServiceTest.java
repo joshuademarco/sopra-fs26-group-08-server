@@ -14,6 +14,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
@@ -226,6 +228,88 @@ public class HabitServiceTest {
         when(habitRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThrows(ResponseStatusException.class, () -> habitService.deleteHabit(99L, 1L));
+    }
+
+    // ---------------tests for resetOverdueHabits ---------------
+    @Test
+    public void resetOverdueHabits_positiveHabitMissed_appliesHealthPenalty() {
+        testHabit.setPositive(true);
+        testHabit.setDueAt(Instant.now().minus(1, ChronoUnit.HOURS));
+        testHabit.setCompleted(false);
+        testHabit.setPenaltyApplied(false);
+
+        when(habitRepository.findByCompletedFalseAndDueAtBefore(any())).thenReturn(List.of(testHabit));
+        when(habitRepository.findByCompletedTrueAndDueAtBefore(any())).thenReturn(List.of());
+
+        habitService.resetOverdueHabits();
+
+        // health penalty must be applied for missed positive habit
+        verify(characterService, times(1)).applyNegativeHabitPenalty(eq(1L), eq(1));
+        assertTrue(testHabit.getPenaltyApplied());
+    }
+
+    @Test
+    public void resetOverdueHabits_negativeHabitMissed_noPenalty() {
+        // missing a negative habit should NOT give penalty
+        testHabit.setPositive(false);
+        testHabit.setDueAt(Instant.now().minus(1, ChronoUnit.HOURS));
+        testHabit.setCompleted(false);
+
+        when(habitRepository.findByCompletedFalseAndDueAtBefore(any())).thenReturn(List.of(testHabit));
+        when(habitRepository.findByCompletedTrueAndDueAtBefore(any())).thenReturn(List.of());
+
+        habitService.resetOverdueHabits();
+
+        verify(characterService, never()).applyNegativeHabitPenalty(any(), any());
+        assertFalse(testHabit.getPenaltyApplied());
+    }
+
+    @Test
+    public void resetOverdueHabits_missedHabit_resetsStreak() {
+        testHabit.setStreak(5);
+        testHabit.setDueAt(Instant.now().minus(1, ChronoUnit.HOURS));
+        testHabit.setCompleted(false);
+
+        when(habitRepository.findByCompletedFalseAndDueAtBefore(any())).thenReturn(List.of(testHabit));
+        when(habitRepository.findByCompletedTrueAndDueAtBefore(any())).thenReturn(List.of());
+
+        habitService.resetOverdueHabits();
+
+        assertEquals(0, testHabit.getStreak());
+    }
+
+    @Test
+    public void resetOverdueHabits_completedHabitReset_clearsPenaltyApplied() {
+        testHabit.setCompleted(true);
+        testHabit.setPenaltyApplied(true);
+        testHabit.setDueAt(Instant.now().minus(1, ChronoUnit.HOURS));
+
+        when(habitRepository.findByCompletedFalseAndDueAtBefore(any())).thenReturn(List.of());
+        when(habitRepository.findByCompletedTrueAndDueAtBefore(any())).thenReturn(List.of(testHabit));
+
+        habitService.resetOverdueHabits();
+
+        assertFalse(testHabit.getPenaltyApplied());
+        assertFalse(testHabit.getCompleted());
+        assertNull(testHabit.getCompletedAt());
+    }
+
+    @Test
+    public void resetOverdueHabits_calledTwice_penaltyAppliedOnlyOnce() {
+        testHabit.setPositive(true);
+        testHabit.setDueAt(Instant.now().minus(1, ChronoUnit.HOURS));
+        testHabit.setCompleted(false);
+
+        when(habitRepository.findByCompletedFalseAndDueAtBefore(any()))
+                .thenReturn(List.of(testHabit)) // first run -> habit is overdue
+                .thenReturn(List.of()); // second run -> dueAt pushed to future, hence not found
+        when(habitRepository.findByCompletedTrueAndDueAtBefore(any())).thenReturn(List.of());
+
+        habitService.resetOverdueHabits();
+        habitService.resetOverdueHabits();
+
+        // penalty applied exactly once despite two scheduler executions
+        verify(characterService, times(1)).applyNegativeHabitPenalty(eq(1L), eq(1));
     }
 
     @Test
