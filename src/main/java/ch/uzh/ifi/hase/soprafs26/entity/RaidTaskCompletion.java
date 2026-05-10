@@ -25,6 +25,10 @@ public class RaidTaskCompletion {
 
     private Instant completedAt;
 
+    protected void onCreate() {
+        this.completedAt = Instant.now();
+    }
+
     public RaidParticipation getParticipation() {
         return participation;
     }

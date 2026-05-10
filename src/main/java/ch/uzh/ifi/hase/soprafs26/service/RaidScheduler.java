@@ -26,4 +26,9 @@ public class RaidScheduler {
     public void expireOverdueTasks() {
         raidService.expireOverdueTasks();
     }
+
+    @Scheduled(fixedDelay = 6 * 60 * 60 * 1000) // every 6 hours
+    public void autoScheduleRaids() {
+        raidService.autoScheduleRaidsForAllGroups();
+    }
 }
