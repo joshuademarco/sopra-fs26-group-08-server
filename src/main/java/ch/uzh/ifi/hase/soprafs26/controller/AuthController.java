@@ -91,6 +91,13 @@ public class AuthController {
         return ResponseEntity.ok(userGetDTO);
     }
 
+    @PatchMapping("/onboarding")
+    public ResponseEntity<UserGetDTO> completeOnboarding(@CookieValue(name = "token", required = false) String tokenCookie) {
+        User updatedUser = userService.completeOnboarding(tokenCookie);
+        UserGetDTO userGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(updatedUser);
+        return ResponseEntity.ok(userGetDTO);
+    }
+
     @GetMapping("/me")
     public ResponseEntity<UserGetDTO> me(@CookieValue(name = "token", required = false) String tokenCookie) {
         User user = userService.getUserByToken(tokenCookie);
