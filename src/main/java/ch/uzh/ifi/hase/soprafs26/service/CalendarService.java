@@ -33,7 +33,7 @@ public class CalendarService {
     private static final String GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
     private static final String GOOGLE_CALENDAR_EVENTS_URL = "https://www.googleapis.com/calendar/v3/calendars/primary/events";
     private static final String GOOGLE_FREEBUSY_URL = "https://www.googleapis.com/calendar/v3/freeBusy";
-    private static final String GOOGLE_CALENDAR_SCOPE = "https://www.googleapis.com/auth/calendar.readonly";
+    private static final String GOOGLE_CALENDAR_SCOPE = "https://www.googleapis.com/auth/calendar.events";
 
     // Fixed issue of not mapping correct values
     // source:
@@ -102,6 +102,43 @@ public class CalendarService {
     /** Removes stored Google Calendar tokens for the user. */
     public void disconnect(Long userId) {
         calendarTokenRepository.findByUserId(userId).ifPresent(calendarTokenRepository::delete);
+    }
+
+    /** Adds a raid event to the user Google Calendar. TEST if this really works */
+    public void addRaidEventToCalendar(Long userId, String raidName, Instant start, Instant end) {
+        if (!isConnected(userId))
+            return;
+        CalendarToken token;
+        try {
+            token = getValidToken(userId);
+        } catch (Exception e) {
+            return;
+        }
+
+        JSONObject startObj = new JSONObject();
+        startObj.put("dateTime", start.toString());
+        startObj.put("timeZone", "UTC");
+
+        JSONObject endObj = new JSONObject();
+        endObj.put("dateTime", end.toString());
+        endObj.put("timeZone", "UTC");
+
+        JSONObject event = new JSONObject();
+        event.put("summary", "Boss Raid: " + raidName);
+        event.put("start", startObj);
+        event.put("end", endObj);
+
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(GOOGLE_CALENDAR_EVENTS_URL))
+                    .header("Authorization", "Bearer " + token.getAccessToken())
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(event.toString()))
+                    .build();
+            client.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (Exception e) {
+        }
     }
 
     public List<CalendarEventGetDTO> getEvents(Long userId) {

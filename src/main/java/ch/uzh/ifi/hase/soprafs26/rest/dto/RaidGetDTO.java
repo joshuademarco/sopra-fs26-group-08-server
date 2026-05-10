@@ -114,4 +114,5 @@ public class RaidGetDTO {
     public void setTasks(List<RaidTaskDTO> tasks) {
         this.tasks = tasks;
     }
+
 }

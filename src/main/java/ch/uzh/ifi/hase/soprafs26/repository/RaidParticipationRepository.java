@@ -19,4 +19,5 @@ public interface RaidParticipationRepository extends JpaRepository<RaidParticipa
     List<RaidParticipation> findByBossRaidId(Long id);
 
     Optional<RaidParticipation> findByBossRaidAndUser(BossRaid bossRaid, User user);
+    long countByBossRaidIdAndAccepted(Long bossRaidId, Boolean accepted);
 }

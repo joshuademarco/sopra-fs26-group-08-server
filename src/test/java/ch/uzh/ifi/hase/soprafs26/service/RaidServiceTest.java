@@ -95,6 +95,7 @@ public class RaidServiceTest {
         participation = new RaidParticipation();
         participation.setUser(user);
         participation.setBossRaid(raid);
+        participation.setAccepted(true);
 
         when(userRepository.findByToken("token")).thenReturn(user);
         when(bossRaidRepository.findById(1L)).thenReturn(Optional.of(raid));
@@ -259,6 +260,8 @@ public class RaidServiceTest {
         raid.setStatus(RaidStatus.SCHEDULED);
         when(bossRaidRepository.findByStatusAndScheduledTimeBefore(eq(RaidStatus.SCHEDULED), any()))
                 .thenReturn(List.of(raid));
+        when(raidParticipationRepository.countByBossRaidIdAndAccepted(raid.getId(), true))
+                .thenReturn(2L);
 
         raidService.activateDueRaids();
 

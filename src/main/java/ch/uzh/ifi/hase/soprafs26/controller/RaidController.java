@@ -1,5 +1,6 @@
 package ch.uzh.ifi.hase.soprafs26.controller;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,6 +51,13 @@ public class RaidController {
         raidService.joinRaid(raidId, token);
     }
 
+    @PostMapping("/raids/{raidId}/rsvp")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void rsvpRaid(@PathVariable Long raidId, @RequestParam boolean accepted,
+            @CookieValue(name = "token", required = true) String token) {
+        raidService.rsvpRaid(raidId, accepted, token);
+    }
+
     @PostMapping("/raids/{raidId}/tasks/{taskId}/complete")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void completeTask(@PathVariable Long raidId, @PathVariable Long taskId, @RequestParam Boolean success,
@@ -69,5 +77,45 @@ public class RaidController {
             @RequestParam(defaultValue = "7") int windowDays) {
         BossRaid raid = raidService.rescheduleRaid(raidId, windowDays);
         return DTOMapper.INSTANCE.convertEntityToRaidGetDTO(raid);
+    }
+
+    // TODO: Remove this admin endpoint again
+
+    @PostMapping("/admin/groups/{groupId}/schedule")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void adminScheduleGroup(@PathVariable Long groupId, @RequestParam(required = false) String earliest) {
+        if (earliest != null && !earliest.isEmpty()) {
+            Instant earliestTime = Instant.parse(earliest);
+            raidService.adminScheduleForGroupWithEarliest(groupId, earliestTime);
+        } else {
+            raidService.adminAutoScheduleForGroup(groupId);
+        }
+    }
+
+    @PostMapping("/admin/groups/{groupId}/start-raid")
+    @ResponseStatus(HttpStatus.CREATED)
+    public RaidGetDTO adminStartRaidImmediately(@PathVariable Long groupId) {
+        BossRaid raid = raidService.adminStartRaidImmediately(groupId);
+        return raidService.convertEntityToRaidGetDTO(raid);
+    }
+
+    @PostMapping("/admin/raids/{raidId}/fast-forward")
+    public RaidGetDTO adminFastForward(@PathVariable Long raidId,
+            @RequestParam(defaultValue = "10") int seconds) {
+        BossRaid raid = raidService.adminFastForwardRaid(raidId, seconds);
+        return raidService.convertEntityToRaidGetDTO(raid);
+    }
+
+    @PostMapping("/admin/raids/{raidId}/force-complete")
+    public RaidGetDTO adminForceComplete(@PathVariable Long raidId,
+            @RequestParam(defaultValue = "DEFEATED") String outcome) {
+        BossRaid raid = raidService.adminForceCompleteRaid(raidId, outcome);
+        return raidService.convertEntityToRaidGetDTO(raid);
+    }
+
+    @DeleteMapping("/admin/groups/{groupId}/raids")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void adminClearRaids(@PathVariable Long groupId) {
+        raidService.adminClearGroupRaids(groupId);
     }
 }

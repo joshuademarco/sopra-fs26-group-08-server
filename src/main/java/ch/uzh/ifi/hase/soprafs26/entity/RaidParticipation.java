@@ -31,6 +31,14 @@ public class RaidParticipation {
     @Column(nullable = false)
     private Integer tasksFailed = 0;
 
+    @Column(nullable = false)
+    private Integer xpEarned = 0;
+
+    @Column(nullable = false)
+    private Boolean mvp = false;
+
+    private Boolean accepted;
+
     @PrePersist
     protected void onCreate() {
         this.joinedAt = Instant.now();
@@ -90,5 +98,29 @@ public class RaidParticipation {
 
     public void setTasksFailed(Integer tasksFailed) {
         this.tasksFailed = tasksFailed;
+    }
+
+    public Boolean getAccepted() {
+        return accepted;
+    }
+
+    public void setAccepted(Boolean accepted) {
+        this.accepted = accepted;
+    }
+
+    public Integer getXpEarned() {
+        return xpEarned;
+    }
+
+    public void setXpEarned(Integer xpEarned) {
+        this.xpEarned = xpEarned;
+    }
+
+    public Boolean getMvp() {
+        return mvp;
+    }
+
+    public void setMvp(Boolean mvp) {
+        this.mvp = mvp;
     }
 }
