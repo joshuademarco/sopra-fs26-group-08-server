@@ -1,11 +1,14 @@
 package ch.uzh.ifi.hase.soprafs26.entity;
 
+import org.hibernate.annotations.DiscriminatorOptions;
+
 import jakarta.persistence.*;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "item_type", discriminatorType = DiscriminatorType.STRING)
 @DiscriminatorValue("ITEM")
+@DiscriminatorOptions(force = false)
 @Table(name = "items")
 public class Item {
 
@@ -19,7 +22,7 @@ public class Item {
     @Column(nullable = false)
     private String assetKey;
 
-    @Column(name = "item_type", insertable = false, updatable = false)
+    @Transient
     private String itemType;
 
     public Long getId() {
