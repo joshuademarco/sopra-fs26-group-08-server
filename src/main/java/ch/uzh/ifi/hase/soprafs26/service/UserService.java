@@ -153,6 +153,13 @@ public class UserService {
 		return user;
 	}
 
+    public User completeOnboarding(String token) {
+		User user = getUserByToken(token);
+		user.setOnboardingCompleted(true);
+		userRepository.saveAndFlush(user);
+		return user;
+	}
+
 	private void validateProfileUpdate(User existingUser, String username, String email) {
 		User userByUsername = userRepository.findByUsername(username);
 		if (userByUsername != null && !userByUsername.getId().equals(existingUser.getId())) {

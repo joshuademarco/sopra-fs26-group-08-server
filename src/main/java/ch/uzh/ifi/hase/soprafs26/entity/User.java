@@ -60,6 +60,9 @@ public class User implements Serializable {
     @Column(nullable = false)
     private UserStatus status;
 
+    @Column(nullable = false)
+    private boolean onboardingCompleted = false;
+
     @PrePersist
     protected void onCreate() {
         Instant now = Instant.now();
@@ -151,6 +154,14 @@ public class User implements Serializable {
 
     public void setStatus(UserStatus status) {
         this.status = status;
+    }
+
+    public boolean isOnboardingCompleted() {
+        return onboardingCompleted;
+    }
+
+    public void setOnboardingCompleted(boolean onboardingCompleted) {
+        this.onboardingCompleted = onboardingCompleted;
     }
 
     public Character getCharacter() {

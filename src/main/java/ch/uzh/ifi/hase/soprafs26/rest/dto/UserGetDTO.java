@@ -8,7 +8,7 @@ public class UserGetDTO {
 	private String email;
 	private String username;
 	private UserStatus status;
-
+	private boolean onboardingCompleted;
 
 	public Long getId() {
 		return id;
@@ -36,6 +36,14 @@ public class UserGetDTO {
 
 	public UserStatus getStatus() {
 		return status;
+	}
+
+	public boolean isOnboardingCompleted() {
+		return onboardingCompleted;
+	}
+
+	public void setOnboardingCompleted(boolean onboardingCompleted) {
+		this.onboardingCompleted = onboardingCompleted;
 	}
 
 	public void setStatus(UserStatus status) {
