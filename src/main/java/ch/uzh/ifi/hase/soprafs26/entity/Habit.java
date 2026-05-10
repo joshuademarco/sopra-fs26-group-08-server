@@ -32,9 +32,14 @@ public class Habit extends Task {
     @Column(nullable = false)
     private Integer streak = 0;
 
+    @Column
     private Instant dueAt;
 
+    @Column
     private Instant lastCompletedAt;
+
+    @Column(nullable = false)
+    private Boolean penaltyApplied = false;
 
     // getters and setters
     public User getUser() {
@@ -83,5 +88,13 @@ public class Habit extends Task {
 
     public void setLastCompletedAt(Instant lastCompletedAt) {
         this.lastCompletedAt = lastCompletedAt;
+    }
+
+    public Boolean getPenaltyApplied() {
+        return penaltyApplied;
+    }
+
+    public void setPenaltyApplied(Boolean penaltyApplied) {
+        this.penaltyApplied = penaltyApplied;
     }
 }

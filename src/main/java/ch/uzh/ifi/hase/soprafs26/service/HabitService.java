@@ -132,12 +132,15 @@ public class HabitService {
         List<Habit> overdueHabits = habitRepository.findByCompletedFalseAndDueAtBefore(now);
 
         for (Habit habit : overdueHabits) {
-            // habit not completed before due date -> break streak
+            if (habit.getPositive()) {
+                // positive habit missed then health penalty 
+                characterService.applyNegativeHabitPenalty(habit.getUser().getId(), habit.getWeight());
+                habit.setPenaltyApplied(true); // UI signal: show warning on this habit card (#60 + #7)
+            }
             habit.setStreak(0);
-            // push due date forward by one period so it becomes active again
-            habit.setDueAt(calculateDueDate(habit));
+            habit.setDueAt(calculateDueDate(habit)); 
             habitRepository.save(habit);
-            log.debug("Streak reset for overdue habit '{}'", habit.getTitle());
+            log.debug("Streak reset for overdue habit '{}', penalty={}", habit.getTitle(), habit.getPenaltyApplied());
         }
 
         // reset the completed flag for habits that are past due but were completed
@@ -145,7 +148,7 @@ public class HabitService {
         for (Habit habit : completedPastDue) {
             habit.setCompleted(false);
             habit.setCompletedAt(null);
-            habit.setDueAt(calculateDueDate(habit));
+            habit.setPenaltyApplied(false); 
             habitRepository.save(habit);
             log.debug("Reset completed habit '{}' for new period", habit.getTitle());
         }
@@ -158,6 +161,7 @@ public class HabitService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                     "You can only delete your own habits");
         }
+        completionEventRepository.deleteAll(completionEventRepository.findByHabitId(habitId));
         habitRepository.delete(habit);
     }
 
@@ -189,13 +193,17 @@ public class HabitService {
         }
     }
 
-    private int getWeatherCodeSafely() {
+    public int getWeatherCodeSafely() {
         try {
             String json = weatherService.getWeather();
             return weatherService.parseWeatherData(json);
         } catch (Exception e) {
             return 0; // safety default (0 = clear sky) if API broken
         }
+    }
+
+    public double getMultiplierForCategory(int weatherCode, HabitCategory category) {
+        return weatherService.getMultiplier(weatherCode, category.name().toLowerCase());
     }
 
     private Instant calculateDueDate(Habit habit) {

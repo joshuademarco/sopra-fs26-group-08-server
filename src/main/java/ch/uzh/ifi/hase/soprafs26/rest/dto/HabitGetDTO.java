@@ -12,12 +12,14 @@ public class HabitGetDTO {
     private HabitCategory category;
     private HabitFrequency frequency;
     private Boolean positive;
+    private Integer weight;
     private Boolean completed;
     private Integer streak;
     private Instant dueAt;
     private Instant createdAt;
     private Instant completedAt;
-    private Integer weight;
+    private Boolean penaltyApplied;
+    private Double multiplier;
 
     //getters and setters
     public Long getId() {
@@ -68,6 +70,14 @@ public class HabitGetDTO {
         this.positive = positive;
     }
 
+    public Integer getWeight() {
+        return weight;
+    }
+
+    public void setWeight(Integer weight) {
+        this.weight = weight;
+    }
+
     public Boolean getCompleted() {
         return completed;
     }
@@ -108,11 +118,19 @@ public class HabitGetDTO {
         this.completedAt = completedAt;
     }
 
-    public Integer getWeight() {
-        return weight;
+    public Boolean getPenaltyApplied() {
+        return penaltyApplied;
     }
 
-    public void setWeight(Integer weight) {
-        this.weight = weight;
+    public void setPenaltyApplied(Boolean penaltyApplied) {
+        this.penaltyApplied = penaltyApplied;
+    }
+
+    public Double getMultiplier() {
+        return multiplier;
+    }
+
+    public void setMultiplier(Double multiplier) {
+        this.multiplier = multiplier;
     }
 }
