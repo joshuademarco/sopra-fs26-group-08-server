@@ -1,6 +1,7 @@
 package ch.uzh.ifi.hase.soprafs26.service;
 
 import java.time.Instant;
+import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -377,6 +378,22 @@ public class RaidService {
 
         if (success) {
             int damage = task.getSuccessfulDamage() != null ? task.getSuccessfulDamage() : 0;
+            List<RaidTask> tasks = raidTaskRepository.findByRaid(raid);
+            tasks.sort(Comparator.comparingInt(t -> (t.getTaskOrder() != null ? t.getTaskOrder() : 0)));
+            int windowStartSeconds = tasks.stream()
+                    .filter(t -> t.getAssignedUser().equals(task.getAssignedUser())
+                            && t.getTaskOrder() < task.getTaskOrder())
+                    .mapToInt(t -> t.getTimeLimitSeconds() != null ? t.getTimeLimitSeconds() : 0)
+                    .sum();
+            Instant taskWindowStart = raid.getStartedAt().plusSeconds(windowStartSeconds);
+            Long elapsed = Duration.between(taskWindowStart, completion.getCompletedAt()).getSeconds();
+            double timeLeftRatio = 1.0 - ((double) elapsed / task.getTimeLimitSeconds());
+            if (timeLeftRatio >= 0.75) {
+                damage = (int) (damage * 1.1);
+            } else if (timeLeftRatio >= 0.5) {
+                damage = (int) (damage * 1.05);
+            }
+
             raid.applyDamage(damage);
             participation.setTasksCompleted(participation.getTasksCompleted() + 1);
             participation.setDamageDealt(participation.getDamageDealt() + damage);
