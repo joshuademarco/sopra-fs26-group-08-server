@@ -21,6 +21,7 @@ import ch.uzh.ifi.hase.soprafs26.constant.RaidStatus;
 import ch.uzh.ifi.hase.soprafs26.entity.BossRaid;
 import ch.uzh.ifi.hase.soprafs26.entity.Character;
 import ch.uzh.ifi.hase.soprafs26.entity.Group;
+import ch.uzh.ifi.hase.soprafs26.entity.Item;
 import ch.uzh.ifi.hase.soprafs26.entity.RaidParticipation;
 import ch.uzh.ifi.hase.soprafs26.entity.RaidTask;
 import ch.uzh.ifi.hase.soprafs26.entity.RaidTaskCompletion;
@@ -49,6 +50,7 @@ public class RaidService {
     private final GroupRepository groupRepository;
     private final RaidLiveService raidLiveService;
     private final ch.uzh.ifi.hase.soprafs26.service.CharacterLiveService characterLiveService;
+    private final ItemService itemService;
 
     @Autowired
     public RaidService(BossRaidRepository bossRaidRepository,
@@ -58,7 +60,8 @@ public class RaidService {
             CalendarService calendarService,
             GroupRepository groupRepository,
             RaidLiveService raidLiveService,
-            ch.uzh.ifi.hase.soprafs26.service.CharacterLiveService characterLiveService) {
+            ch.uzh.ifi.hase.soprafs26.service.CharacterLiveService characterLiveService,
+            ItemService itemService) {
         this.bossRaidRepository = bossRaidRepository;
         this.raidParticipationRepository = raidParticipationRepository;
         this.userRepository = userRepository;
@@ -68,6 +71,7 @@ public class RaidService {
         this.groupRepository = groupRepository;
         this.raidLiveService = raidLiveService;
         this.characterLiveService = characterLiveService;
+        this.itemService = itemService;
     }
 
     public BossRaid createRaid(Long groupId, RaidPostDTO dto) {
@@ -196,6 +200,20 @@ public class RaidService {
                     || (p.getDamageDealt() != null ? p.getDamageDealt()
                             : 0) > (top.getDamageDealt() != null ? top.getDamageDealt() : 0)) {
                 top = p;
+            }
+        }
+        if (outcome == RaidStatus.DEFEATED) {
+            List<Item> items = itemService.getAllItems();
+            for (RaidParticipation p : participations) {
+                if (!items.isEmpty() && Math.random() < 0.25) {
+                    Long userId = p.getUser().getId();
+                    int randomItem = (int)(Math.random() * items.size());
+                    Long itemId = items.get(randomItem).getId();
+                    try {
+                        itemService.grantItem(userId, itemId);
+                    } catch (ResponseStatusException ignored) {
+                    }  
+                }
             }
         }
         if (outcome == RaidStatus.DEFEATED && top != null
