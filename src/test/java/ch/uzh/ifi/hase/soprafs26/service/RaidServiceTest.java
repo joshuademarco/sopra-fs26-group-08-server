@@ -45,6 +45,8 @@ public class RaidServiceTest {
     private RaidLiveService raidLiveService;
     @Mock
     private CharacterLiveService characterLiveService;
+    @Mock
+    private ItemService itemService;
 
     @InjectMocks
     private RaidService raidService;
@@ -103,19 +105,26 @@ public class RaidServiceTest {
         when(raidParticipationRepository.findByBossRaidAndUser(raid, user)).thenReturn(Optional.of(participation));
         when(raidTaskCompletionRepository.findByRaidTaskAndParticipation(task, participation))
                 .thenReturn(Optional.empty());
+        when(itemService.getAllItems()).thenReturn(List.of());
+        when(raidTaskCompletionRepository.save(any())).thenAnswer(i -> {
+            RaidTaskCompletion c = i.getArgument(0);
+            c.setCompletedAt(Instant.now());
+            return c;
+        });
     }
 
     @Test
     public void completeTask_success_reducesBossHPAndTracksStats() {
         raidService.completeTask(1L, 1L, true, "token");
 
-        assertEquals(400, raid.getHealth());
+        assertEquals(390, raid.getHealth());
         assertEquals(1, participation.getTasksCompleted());
-        assertEquals(100, participation.getDamageDealt());
+        assertEquals(110, participation.getDamageDealt());
     }
 
     @Test
     public void completeTask_success_killsBoss_statusBecomesDefeated() {
+        when(raidParticipationRepository.findByBossRaidId(1L)).thenReturn(List.of(participation));
         raid.setHealth(100);
         task.setSuccessfulDamage(100);
 
@@ -325,7 +334,7 @@ public class RaidServiceTest {
     @Test
     public void expireOverdueTasks_overdueTask_autoFails() {
         raid.setStartedAt(Instant.now().minusSeconds(700));
-        
+
         when(bossRaidRepository.findByStatus(RaidStatus.ACTIVE)).thenReturn(List.of(raid));
         when(raidTaskRepository.findByRaid(raid)).thenReturn(new ArrayList<>(List.of(task)));
         when(raidTaskCompletionRepository.findByRaidTask(task)).thenReturn(List.of());
