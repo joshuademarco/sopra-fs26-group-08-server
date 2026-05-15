@@ -63,12 +63,12 @@ public class WeatherQuestService {
         Instant end = today.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant();
         String weatherString;
         try {
-            weatherString = getWeatherString(weatherService.parseWeatherData(weatherService.getWeather()));
+            weatherString = getWeatherString(weatherService.parseDailyWeatherData(weatherService.getDailyWeather()));
         } catch (Exception e) {
             weatherString = "clear";
         }
         List<QuestTemplate> options = questPool.get(weatherString);
-        QuestTemplate t = options.get((int)(new Random(userId + today.toEpochDay()).nextInt(2)));
+        QuestTemplate t = options.get(new Random().nextInt(options.size()));
         int count = habitCompletionEventRepository.findByUserIdAndHabitCategoryAndCompletedAtBetween(userId, t.targetCategory(), start, end).size();
 
         WeatherQuestGetDTO dto = new WeatherQuestGetDTO();

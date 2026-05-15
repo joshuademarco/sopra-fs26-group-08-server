@@ -24,7 +24,7 @@ public class WeatherQuestController {
 
     @GetMapping("/users/{userId}/weather-quest")
     @ResponseStatus(HttpStatus.OK)
-    public WeatherQuestGetDTO getWeatherQuestDTO(@PathVariable Long userId, @CookieValue(name = "token") String token) {
+    public WeatherQuestGetDTO getWeatherQuestDTO(@PathVariable Long userId, @CookieValue(name = "token", required = true) String token) {
         User requestingUser = userService.getUserByToken(token);
         verifyOwnership(requestingUser.getId(), userId);
         return weatherQuestService.getWeatherQuest(userId);
