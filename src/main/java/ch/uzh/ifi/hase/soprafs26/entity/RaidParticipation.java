@@ -19,6 +19,10 @@ public class RaidParticipation {
     @JoinColumn(name = "boss_raid_id", nullable = false)
     private BossRaid bossRaid;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "dropped_item_id")
+    private Item droppedItem;
+
     @Column(nullable = false)
     private Instant joinedAt;
 
@@ -66,6 +70,14 @@ public class RaidParticipation {
 
     public void setBossRaid(BossRaid bossRaid) {
         this.bossRaid = bossRaid;
+    }
+
+    public Item getDroppedItem() {
+        return droppedItem;
+    }
+
+    public void setDroppedItem(Item droppedItem) {
+        this.droppedItem = droppedItem;
     }
 
     public Instant getJoinedAt() {

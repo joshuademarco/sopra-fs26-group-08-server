@@ -37,6 +37,7 @@ import ch.uzh.ifi.hase.soprafs26.rest.dto.RaidGetDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.RaidMemberDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.RaidPostDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.RaidTaskDTO;
+import ch.uzh.ifi.hase.soprafs26.rest.mapper.DTOMapper;
 
 @Service
 public class RaidService {
@@ -155,6 +156,9 @@ public class RaidService {
                 member.setDamageDealt(p != null ? p.getDamageDealt() : 0);
                 member.setXpEarned(p != null ? p.getXpEarned() : 0);
                 member.setMvp(p != null && Boolean.TRUE.equals(p.getMvp()));
+                member.setDroppedItem(p != null && p.getDroppedItem() != null
+                        ? DTOMapper.INSTANCE.convertEntityToItemGetDTO(p.getDroppedItem())
+                        : null);
 
                 Character character = user.getCharacter();
                 member.setHealth(character.getHealth());
@@ -194,12 +198,13 @@ public class RaidService {
                         + (p.getTasksCompleted() != null ? p.getTasksCompleted() : 0) * 10;
                 if (!items.isEmpty() && Math.random() < 0.25) {
                     Long userId = p.getUser().getId();
-                    int randomItem = (int)(Math.random() * items.size());
-                    Long itemId = items.get(randomItem).getId();
+                    int randomItem = (int) (Math.random() * items.size());
+                    Item drop = items.get(randomItem);
                     try {
-                        itemService.grantItem(userId, itemId);
+                        itemService.grantItem(userId, drop.getId());
+                        p.setDroppedItem(drop);
                     } catch (ResponseStatusException ignored) {
-                    }  
+                    }
                 }
             } else {
                 xp = (p.getTasksCompleted() != null ? p.getTasksCompleted() : 0) * 5;

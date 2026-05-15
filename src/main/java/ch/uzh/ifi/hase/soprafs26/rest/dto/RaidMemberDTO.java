@@ -16,6 +16,7 @@ public class RaidMemberDTO {
     private String characterType;
     private Integer xpEarned;
     private Boolean mvp;
+    private ItemGetDTO droppedItem;
 
     public Long getUserId() {
         return userId;
@@ -119,5 +120,13 @@ public class RaidMemberDTO {
 
     public void setMvp(Boolean mvp) {
         this.mvp = mvp;
+    }
+
+    public ItemGetDTO getDroppedItem() {
+        return droppedItem;
+    }
+
+    public void setDroppedItem(ItemGetDTO droppedItem) {
+        this.droppedItem = droppedItem;
     }
 }
