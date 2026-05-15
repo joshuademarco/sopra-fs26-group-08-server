@@ -186,11 +186,21 @@ public class RaidService {
             return;
 
         RaidParticipation top = null;
+        List<Item> items = outcome == RaidStatus.DEFEATED ? itemService.getAllItems() : List.of();
         for (RaidParticipation p : participations) {
             int xp;
             if (outcome == RaidStatus.DEFEATED) {
                 xp = (p.getDamageDealt() != null ? p.getDamageDealt() : 0)
                         + (p.getTasksCompleted() != null ? p.getTasksCompleted() : 0) * 10;
+                if (!items.isEmpty() && Math.random() < 0.25) {
+                    Long userId = p.getUser().getId();
+                    int randomItem = (int)(Math.random() * items.size());
+                    Long itemId = items.get(randomItem).getId();
+                    try {
+                        itemService.grantItem(userId, itemId);
+                    } catch (ResponseStatusException ignored) {
+                    }  
+                }
             } else {
                 xp = (p.getTasksCompleted() != null ? p.getTasksCompleted() : 0) * 5;
             }
@@ -202,20 +212,7 @@ public class RaidService {
                 top = p;
             }
         }
-        if (outcome == RaidStatus.DEFEATED) {
-            List<Item> items = itemService.getAllItems();
-            for (RaidParticipation p : participations) {
-                if (!items.isEmpty() && Math.random() < 0.25) {
-                    Long userId = p.getUser().getId();
-                    int randomItem = (int)(Math.random() * items.size());
-                    Long itemId = items.get(randomItem).getId();
-                    try {
-                        itemService.grantItem(userId, itemId);
-                    } catch (ResponseStatusException ignored) {
-                    }  
-                }
-            }
-        }
+
         if (outcome == RaidStatus.DEFEATED && top != null
                 && (top.getDamageDealt() != null ? top.getDamageDealt() : 0) > 0) {
             top.setMvp(true);
