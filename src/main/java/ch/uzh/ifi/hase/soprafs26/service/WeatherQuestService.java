@@ -33,7 +33,7 @@ public class WeatherQuestService {
     private final Map<String, List<QuestTemplate>> questPool = Map.of(
             "clear", List.of(
                     new QuestTemplate("CLEAR", "Sunny", "Sun's Out: Complete 3 physical habits",
-                            HabitCategory.PHYSICAL, 3, "Strength", 1.0),
+                            HabitCategory.PHYSICAL, 3, "Strength", 1.1),
                     new QuestTemplate("CLEAR", "Sunny", "Clear Mind, Sharp Focus: Complete 3 cognitive habits",
                             HabitCategory.COGNITIVE, 3, "Intelligence", 1.8)),
             "cloudy", List.of(
@@ -55,7 +55,7 @@ public class WeatherQuestService {
                     new QuestTemplate("STORM", "Stormy", "Eye of the Storm: Complete 2 physical habits",
                             HabitCategory.PHYSICAL, 2, "Strength", 2.0),
                     new QuestTemplate("STORM", "Stormy", "Storm Endurance: Complete 2 emotional habits",
-                            HabitCategory.EMOTIONAL, 2, "Resilience", 1.0)));
+                            HabitCategory.EMOTIONAL, 2, "Resilience", 1.1)));
 
     public WeatherQuestGetDTO getWeatherQuest(Long userId) {
         LocalDate today = LocalDate.now(ZoneOffset.UTC);
