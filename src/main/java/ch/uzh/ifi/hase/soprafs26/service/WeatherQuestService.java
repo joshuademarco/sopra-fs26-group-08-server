@@ -68,7 +68,7 @@ public class WeatherQuestService {
             weatherString = "clear";
         }
         List<QuestTemplate> options = questPool.get(weatherString);
-        QuestTemplate t = options.get(new Random().nextInt(options.size()));
+        QuestTemplate t = options.get(new Random(today.toEpochDay()).nextInt(options.size()));
         int count = habitCompletionEventRepository.findByUserIdAndHabitCategoryAndCompletedAtBetween(userId, t.targetCategory(), start, end).size();
 
         WeatherQuestGetDTO dto = new WeatherQuestGetDTO();
