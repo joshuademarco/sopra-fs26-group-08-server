@@ -33,8 +33,8 @@ public class WeatherQuestServiceTest {
     public void setup() throws Exception{
         MockitoAnnotations.openMocks(this);
 
-        when(weatherService.getWeather()).thenReturn("{\"current\":{\"weather_code\":1}}");
-        when(weatherService.parseWeatherData(any())).thenReturn(1);
+        when(weatherService.getDailyWeather()).thenReturn("{\"daily\":{\"weather_code\":[1]}}");
+        when(weatherService.parseDailyWeatherData(any())).thenReturn(1);    
         when(habitCompletionEventRepository
                 .findByUserIdAndHabitCategoryAndCompletedAtBetween(any(), any(), any(), any()))
                 .thenReturn(List.of());
@@ -49,7 +49,7 @@ public class WeatherQuestServiceTest {
 
     @Test
     public void getWeatherQuest_rainy_returnsRainQuest() {
-        when(weatherService.parseWeatherData(any())).thenReturn(55);
+        when(weatherService.parseDailyWeatherData(any())).thenReturn(55);
         
         WeatherQuestGetDTO dto = weatherQuestService.getWeatherQuest(userId);
 
@@ -58,7 +58,7 @@ public class WeatherQuestServiceTest {
 
     @Test
     public void getWeatherQuest_weatherApiFails_fallsBackToClear() throws Exception {
-        when(weatherService.getWeather()).thenThrow(new RuntimeException("Test"));
+        when(weatherService.getDailyWeather()).thenThrow(new RuntimeException("Test"));
 
         WeatherQuestGetDTO dto = weatherQuestService.getWeatherQuest(userId);
 
