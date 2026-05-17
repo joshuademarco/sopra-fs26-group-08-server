@@ -25,6 +25,7 @@ public class RaidTaskCompletion {
 
     private Instant completedAt;
 
+    @PrePersist
     protected void onCreate() {
         this.completedAt = Instant.now();
     }

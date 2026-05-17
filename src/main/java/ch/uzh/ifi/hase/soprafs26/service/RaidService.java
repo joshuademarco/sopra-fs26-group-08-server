@@ -1,6 +1,7 @@
 package ch.uzh.ifi.hase.soprafs26.service;
 
 import java.time.Instant;
+import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -20,6 +21,7 @@ import ch.uzh.ifi.hase.soprafs26.constant.RaidStatus;
 import ch.uzh.ifi.hase.soprafs26.entity.BossRaid;
 import ch.uzh.ifi.hase.soprafs26.entity.Character;
 import ch.uzh.ifi.hase.soprafs26.entity.Group;
+import ch.uzh.ifi.hase.soprafs26.entity.Item;
 import ch.uzh.ifi.hase.soprafs26.entity.RaidParticipation;
 import ch.uzh.ifi.hase.soprafs26.entity.RaidTask;
 import ch.uzh.ifi.hase.soprafs26.entity.RaidTaskCompletion;
@@ -48,6 +50,7 @@ public class RaidService {
     private final GroupRepository groupRepository;
     private final RaidLiveService raidLiveService;
     private final ch.uzh.ifi.hase.soprafs26.service.CharacterLiveService characterLiveService;
+    private final ItemService itemService;
 
     @Autowired
     public RaidService(BossRaidRepository bossRaidRepository,
@@ -57,7 +60,8 @@ public class RaidService {
             CalendarService calendarService,
             GroupRepository groupRepository,
             RaidLiveService raidLiveService,
-            ch.uzh.ifi.hase.soprafs26.service.CharacterLiveService characterLiveService) {
+            ch.uzh.ifi.hase.soprafs26.service.CharacterLiveService characterLiveService,
+            ItemService itemService) {
         this.bossRaidRepository = bossRaidRepository;
         this.raidParticipationRepository = raidParticipationRepository;
         this.userRepository = userRepository;
@@ -67,6 +71,7 @@ public class RaidService {
         this.groupRepository = groupRepository;
         this.raidLiveService = raidLiveService;
         this.characterLiveService = characterLiveService;
+        this.itemService = itemService;
     }
 
     public BossRaid createRaid(Long groupId, RaidPostDTO dto) {
@@ -181,11 +186,21 @@ public class RaidService {
             return;
 
         RaidParticipation top = null;
+        List<Item> items = outcome == RaidStatus.DEFEATED ? itemService.getAllItems() : List.of();
         for (RaidParticipation p : participations) {
             int xp;
             if (outcome == RaidStatus.DEFEATED) {
                 xp = (p.getDamageDealt() != null ? p.getDamageDealt() : 0)
                         + (p.getTasksCompleted() != null ? p.getTasksCompleted() : 0) * 10;
+                if (!items.isEmpty() && Math.random() < 0.25) {
+                    Long userId = p.getUser().getId();
+                    int randomItem = (int)(Math.random() * items.size());
+                    Long itemId = items.get(randomItem).getId();
+                    try {
+                        itemService.grantItem(userId, itemId);
+                    } catch (ResponseStatusException ignored) {
+                    }  
+                }
             } else {
                 xp = (p.getTasksCompleted() != null ? p.getTasksCompleted() : 0) * 5;
             }
@@ -197,6 +212,7 @@ public class RaidService {
                 top = p;
             }
         }
+
         if (outcome == RaidStatus.DEFEATED && top != null
                 && (top.getDamageDealt() != null ? top.getDamageDealt() : 0) > 0) {
             top.setMvp(true);
@@ -377,6 +393,22 @@ public class RaidService {
 
         if (success) {
             int damage = task.getSuccessfulDamage() != null ? task.getSuccessfulDamage() : 0;
+            List<RaidTask> tasks = raidTaskRepository.findByRaid(raid);
+            tasks.sort(Comparator.comparingInt(t -> (t.getTaskOrder() != null ? t.getTaskOrder() : 0)));
+            int windowStartSeconds = tasks.stream()
+                    .filter(t -> t.getAssignedUser().equals(task.getAssignedUser())
+                            && t.getTaskOrder() < task.getTaskOrder())
+                    .mapToInt(t -> t.getTimeLimitSeconds() != null ? t.getTimeLimitSeconds() : 0)
+                    .sum();
+            Instant taskWindowStart = raid.getStartedAt().plusSeconds(windowStartSeconds);
+            Long elapsed = Duration.between(taskWindowStart, completion.getCompletedAt()).getSeconds();
+            double timeLeftRatio = 1.0 - ((double) elapsed / task.getTimeLimitSeconds());
+            if (timeLeftRatio >= 0.75) {
+                damage = (int) (damage * 1.1);
+            } else if (timeLeftRatio >= 0.5) {
+                damage = (int) (damage * 1.05);
+            }
+
             raid.applyDamage(damage);
             participation.setTasksCompleted(participation.getTasksCompleted() + 1);
             participation.setDamageDealt(participation.getDamageDealt() + damage);
