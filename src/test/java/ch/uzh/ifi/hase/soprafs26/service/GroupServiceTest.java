@@ -2,8 +2,10 @@ package ch.uzh.ifi.hase.soprafs26.service;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,6 +22,7 @@ import ch.uzh.ifi.hase.soprafs26.entity.Group;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.repository.GroupRepository;
 import ch.uzh.ifi.hase.soprafs26.repository.UserRepository;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.GroupPutDTO;
 
 public class GroupServiceTest {
 
@@ -157,5 +160,181 @@ public class GroupServiceTest {
     when(userRepository.findByToken("somethingInvalid")).thenReturn(null);
 
     assertThrows(ResponseStatusException.class, () -> groupService.getMyGroups("somethingInvalid"));
+  }
+
+  @Test
+  public void leaveGroup_validInput_removesUserFromGroup() {
+    Group existingGroup = new Group();
+    existingGroup.setId(2L);
+    existingGroup.setName("Test Group");
+    existingGroup.setPassword("secret");
+    existingGroup.setCreatedBy("other");
+
+    groupOwner.addGroup(existingGroup);
+
+    when(groupRepository.findById(2L)).thenReturn(Optional.of(existingGroup));
+
+    groupService.leaveGroup(2L, "token");
+
+    verify(userRepository).save(groupOwner);
+    assertFalse(groupOwner.getGroups().contains(existingGroup));
+  }
+
+  @Test
+  public void leaveGroup_invalidToken_throwsUnauthorized() {
+    when(userRepository.findByToken("bad")).thenReturn(null);
+
+    assertThrows(ResponseStatusException.class, () -> groupService.leaveGroup(2L, "bad"));
+  }
+
+  @Test
+  public void leaveGroup_groupNotFound_throwsNotFound() {
+    when(groupRepository.findById(99L)).thenReturn(Optional.empty());
+
+    assertThrows(ResponseStatusException.class, () -> groupService.leaveGroup(99L, "token"));
+  }
+
+  @Test
+  public void leaveGroup_ownerCannotLeave_throwsForbidden() {
+    Group existingGroup = new Group();
+    existingGroup.setId(2L);
+    existingGroup.setName("Test Group");
+    existingGroup.setPassword("secret");
+    existingGroup.setCreatedBy("creator");
+
+    groupOwner.addGroup(existingGroup);
+
+    when(groupRepository.findById(2L)).thenReturn(Optional.of(existingGroup));
+
+    assertThrows(ResponseStatusException.class, () -> groupService.leaveGroup(2L, "token"));
+  }
+
+  @Test
+  public void leaveGroup_notMember_throwsBadRequest() {
+    Group existingGroup = new Group();
+    existingGroup.setId(2L);
+    existingGroup.setName("Test Group");
+    existingGroup.setPassword("secret");
+    existingGroup.setCreatedBy("other");
+
+    when(groupRepository.findById(2L)).thenReturn(Optional.of(existingGroup));
+
+    assertThrows(ResponseStatusException.class, () -> groupService.leaveGroup(2L, "token"));
+  }
+
+
+  @Test
+  public void updateGroup_validOwner_updatesName() {
+    Group existingGroup = new Group();
+    existingGroup.setId(2L);
+    existingGroup.setName("Test Group");
+    existingGroup.setPassword("secret");
+    existingGroup.setCreatedBy("creator");
+
+    when(groupRepository.findById(2L)).thenReturn(Optional.of(existingGroup));
+
+    GroupPutDTO dto = new GroupPutDTO();
+    dto.setName("New Name");
+
+    Group result = groupService.updateGroup(2L, dto, "token");
+
+    assertEquals("New Name", result.getName());
+  }
+
+  @Test
+  public void updateGroup_validOwner_updatesPassword() {
+    Group existingGroup = new Group();
+    existingGroup.setId(2L);
+    existingGroup.setName("Test Group");
+    existingGroup.setPassword("secret");
+    existingGroup.setCreatedBy("creator");
+
+    when(groupRepository.findById(2L)).thenReturn(Optional.of(existingGroup));
+
+    GroupPutDTO dto = new GroupPutDTO();
+    dto.setPassword("newpass");
+
+    groupService.updateGroup(2L, dto, "token");
+
+    verify(groupRepository).save(existingGroup);
+  }
+
+  @Test
+  public void updateGroup_invalidToken_throwsUnauthorized() {
+    when(userRepository.findByToken("bad")).thenReturn(null);
+
+    GroupPutDTO dto = new GroupPutDTO();
+    dto.setName("New Name");
+
+    assertThrows(ResponseStatusException.class, () -> groupService.updateGroup(2L, dto, "bad"));
+  }
+
+  @Test
+  public void updateGroup_groupNotFound_throwsNotFound() {
+    when(groupRepository.findById(99L)).thenReturn(Optional.empty());
+
+    GroupPutDTO dto = new GroupPutDTO();
+    dto.setName("New Name");
+
+    assertThrows(ResponseStatusException.class, () -> groupService.updateGroup(99L, dto, "token"));
+  }
+
+  @Test
+  public void updateGroup_notOwner_throwsForbidden() {
+    Group existingGroup = new Group();
+    existingGroup.setId(2L);
+    existingGroup.setName("Test Group");
+    existingGroup.setPassword("secret");
+    existingGroup.setCreatedBy("other");
+
+    when(groupRepository.findById(2L)).thenReturn(Optional.of(existingGroup));
+
+    GroupPutDTO dto = new GroupPutDTO();
+    dto.setName("New Name");
+
+    assertThrows(ResponseStatusException.class, () -> groupService.updateGroup(2L, dto, "token"));
+  }
+
+
+  @Test
+  public void deleteGroup_validOwner_deletesGroup() {
+    Group existingGroup = new Group();
+    existingGroup.setId(2L);
+    existingGroup.setName("Test Group");
+    existingGroup.setPassword("secret");
+    existingGroup.setCreatedBy("creator");
+
+    when(groupRepository.findById(2L)).thenReturn(Optional.of(existingGroup));
+
+    groupService.deleteGroup(2L, "token");
+
+    verify(groupRepository).delete(existingGroup);
+  }
+
+  @Test
+  public void deleteGroup_invalidToken_throwsUnauthorized() {
+    when(userRepository.findByToken("bad")).thenReturn(null);
+
+    assertThrows(ResponseStatusException.class, () -> groupService.deleteGroup(2L, "bad"));
+  }
+
+  @Test
+  public void deleteGroup_groupNotFound_throwsNotFound() {
+    when(groupRepository.findById(99L)).thenReturn(Optional.empty());
+
+    assertThrows(ResponseStatusException.class, () -> groupService.deleteGroup(99L, "token"));
+  }
+
+  @Test
+  public void deleteGroup_notOwner_throwsForbidden() {
+    Group existingGroup = new Group();
+    existingGroup.setId(2L);
+    existingGroup.setName("Test Group");
+    existingGroup.setPassword("secret");
+    existingGroup.setCreatedBy("other");
+
+    when(groupRepository.findById(2L)).thenReturn(Optional.of(existingGroup));
+
+    assertThrows(ResponseStatusException.class, () -> groupService.deleteGroup(2L, "token"));
   }
 }

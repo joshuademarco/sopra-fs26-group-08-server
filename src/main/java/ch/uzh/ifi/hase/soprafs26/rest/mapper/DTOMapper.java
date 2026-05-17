@@ -117,6 +117,12 @@ public interface DTOMapper {
 	Group convertGroupPostDTOtoEntity(GroupPostDTO groupPostDTO);
 
 	@Mapping(source = "id", target = "id")
+	@Mapping(source = "username", target = "username")
+	@Mapping(source = "status", target = "status")
+	@Mapping(source = "character.level", target = "level")
+	GroupGetDTO.GroupMember convertUserToGroupMember(User user);
+
+	@Mapping(source = "id", target = "id")
 	@Mapping(source = "name", target = "name")
 	@Mapping(source = "createdBy", target = "createdBy")
 	@Mapping(source = "createdAt", target = "createdAt")
