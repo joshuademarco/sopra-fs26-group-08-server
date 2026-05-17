@@ -13,17 +13,18 @@ import ch.uzh.ifi.hase.soprafs26.entity.Group;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.repository.GroupRepository;
 import ch.uzh.ifi.hase.soprafs26.repository.UserRepository;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.GroupPutDTO;
 
 @Service
 @Transactional
 public class GroupService {
 
   private final GroupRepository groupRepository;
-  private final UserRepository userRepository; 
+  private final UserRepository userRepository;
 
   public GroupService(GroupRepository groupRepository, UserRepository userRepository) {
     this.groupRepository = groupRepository;
-    this.userRepository = userRepository; 
+    this.userRepository = userRepository;
   }
 
   public Group createGroup(Group newGroup, String token) {
@@ -38,12 +39,12 @@ public class GroupService {
 
     newGroup.setCreatedBy(creator.getUsername());
     newGroup.setCreatedAt(LocalDateTime.now());
-        
-    Group savedGroup = groupRepository.save(newGroup); 
-        
+
+    Group savedGroup = groupRepository.save(newGroup);
+
     creator.addGroup(savedGroup);
     userRepository.save(creator);
-        
+
     return savedGroup;
   }
 
@@ -64,7 +65,7 @@ public class GroupService {
 
     if (user.getGroups().contains(group)) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You are already a member of this group.");
-    } 
+    }
 
     user.addGroup(group);
     userRepository.save(user);
@@ -72,12 +73,67 @@ public class GroupService {
     return group;
   }
 
+  public void leaveGroup(Long groupId, String token) {
+    User user = userRepository.findByToken(token);
+    if (user == null)
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Session expired.");
+
+    Group group = groupRepository.findById(groupId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Group not found."));
+
+    if (group.getCreatedBy().equals(user.getUsername()))
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Owner cannot leave. Delete the group instead.");
+
+    if (!user.getGroups().contains(group))
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You are not a member of this group.");
+
+    user.removeGroup(group);
+    userRepository.save(user);
+  }
+
+  public Group updateGroup(Long groupId, GroupPutDTO dto, String token) {
+    User owner = userRepository.findByToken(token);
+    if (owner == null)
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Session expired.");
+
+    Group group = groupRepository.findById(groupId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Group not found."));
+
+    if (!group.getCreatedBy().equals(owner.getUsername()))
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the owner can edit this group.");
+
+    if (dto.getName() != null && !dto.getName().isBlank())
+      group.setName(dto.getName());
+    if (dto.getPassword() != null && !dto.getPassword().isBlank())
+      group.setPassword(dto.getPassword());
+
+    return groupRepository.save(group);
+  }
+
+  public void deleteGroup(Long groupId, String token) {
+    User owner = userRepository.findByToken(token);
+    if (owner == null)
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Session expired.");
+
+    Group group = groupRepository.findById(groupId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Group not found."));
+
+    if (!group.getCreatedBy().equals(owner.getUsername()))
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the owner can delete this group.");
+
+    for (User u : new java.util.HashSet<>(group.getUsers())) {
+      u.getGroups().remove(group);
+      userRepository.save(u);
+    }
+    groupRepository.delete(group);
+  }
+
   public List<Group> getMyGroups(String token) {
     User user = userRepository.findByToken(token);
     if (user == null) {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Session expired.");
     }
-        
+
     return new ArrayList<>(user.getGroups());
   }
 }
