@@ -1,9 +1,11 @@
 package ch.uzh.ifi.hase.soprafs26.repository;
 
+import ch.uzh.ifi.hase.soprafs26.constant.HabitCategory;
 import ch.uzh.ifi.hase.soprafs26.entity.HabitCompletionEvent;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.List;
 
 @Repository("habitCompletionEventRepository")
@@ -15,4 +17,6 @@ public interface HabitCompletionEventRepository
 
     //all completion events by a specific user (for progress tracking)
     List<HabitCompletionEvent> findByUserId(Long userId);
+
+    List<HabitCompletionEvent> findByUserIdAndHabitCategoryAndCompletedAtBetween(Long userId, HabitCategory category, Instant start, Instant end);
 }
