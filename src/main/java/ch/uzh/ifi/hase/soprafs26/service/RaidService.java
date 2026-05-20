@@ -8,6 +8,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -179,7 +180,7 @@ public class RaidService {
         Map<Long, Integer> userWindowOffset = new HashMap<>();
         List<RaidTaskDTO> taskDTOs = new ArrayList<>();
         for (RaidTask task : tasks) {
-            taskDTOs.add(buildRaidTaskDTO(task, userWindowOffset));
+            taskDTOs.add(buildRaidTaskDTO(task, userWindowOffset, raid.getStartedAt()));
         }
         dto.setTasks(taskDTOs);
 
@@ -246,7 +247,7 @@ public class RaidService {
         }
     }
 
-    private RaidTaskDTO buildRaidTaskDTO(RaidTask task, Map<Long, Integer> userWindowOffset) {
+    private RaidTaskDTO buildRaidTaskDTO(RaidTask task, Map<Long, Integer> userWindowOffset, Instant raidStartedAt) {
         RaidTaskDTO taskDTO = new RaidTaskDTO();
         taskDTO.setId(task.getId());
         taskDTO.setTitle(task.getTitle());
@@ -261,11 +262,18 @@ public class RaidService {
 
         int windowStartSeconds = userWindowOffset.getOrDefault(assignedUserId, 0);
         taskDTO.setWindowStartSeconds(windowStartSeconds);
-        if (assignedUserId != null && task.getTimeLimitSeconds() != null) {
-            userWindowOffset.put(assignedUserId, windowStartSeconds + task.getTimeLimitSeconds());
-        }
-
         List<RaidTaskCompletion> completions = raidTaskCompletionRepository.findByRaidTask(task);
+
+        if (assignedUserId != null && task.getTimeLimitSeconds() != null) {
+            int advance;
+            if (!completions.isEmpty()) {
+                Instant windowStart = raidStartedAt.plusSeconds(windowStartSeconds);
+                advance = (int) Duration.between(windowStart, completions.get(0).getCompletedAt()).getSeconds();
+            } else {
+                advance = task.getTimeLimitSeconds();
+            }
+            userWindowOffset.put(assignedUserId, windowStartSeconds + advance);
+        }
 
         List<Long> completedByUserIds = completions.stream()
                 .map(completion -> completion.getParticipation().getUser().getId())
@@ -408,11 +416,23 @@ public class RaidService {
             int damage = task.getSuccessfulDamage() != null ? task.getSuccessfulDamage() : 0;
             List<RaidTask> tasks = raidTaskRepository.findByRaid(raid);
             tasks.sort(Comparator.comparingInt(t -> (t.getTaskOrder() != null ? t.getTaskOrder() : 0)));
-            int windowStartSeconds = tasks.stream()
+            List<RaidTask> priorTasks = tasks.stream()
                     .filter(t -> t.getAssignedUser().equals(task.getAssignedUser())
                             && t.getTaskOrder() < task.getTaskOrder())
-                    .mapToInt(t -> t.getTimeLimitSeconds() != null ? t.getTimeLimitSeconds() : 0)
-                    .sum();
+                    .collect(Collectors.toList());
+
+            long windowStartSeconds = 0;
+            for (RaidTask priorTask : priorTasks) {
+                Optional<RaidTaskCompletion> priorCompletion = raidTaskCompletionRepository
+                        .findByRaidTaskAndParticipation(priorTask, participation);
+                if (priorCompletion.isPresent()) {
+                    Instant priorStart = raid.getStartedAt().plusSeconds(windowStartSeconds);
+                    windowStartSeconds += Duration.between(priorStart, priorCompletion.get().getCompletedAt())
+                            .getSeconds();
+                } else {
+                    windowStartSeconds += priorTask.getTimeLimitSeconds() != null ? priorTask.getTimeLimitSeconds() : 0;
+                }
+            }
             Instant taskWindowStart = raid.getStartedAt().plusSeconds(windowStartSeconds);
             Long elapsed = Duration.between(taskWindowStart, completion.getCompletedAt()).getSeconds();
             double timeLeftRatio = 1.0 - ((double) elapsed / task.getTimeLimitSeconds());
@@ -697,7 +717,7 @@ public class RaidService {
                 new TaskTemplate("Wash your face", "Splash cold water on your face", HabitCategory.PHYSICAL, 90, 2, 60),
                 new TaskTemplate("Take Vitamins", "Take your daily vitamins or supplements if needed",
                         HabitCategory.PHYSICAL, 90, 2, 60),
-                new TaskTemplate("Wipe teh screen", "Clean your computer or phone screen", HabitCategory.PHYSICAL, 90,
+                new TaskTemplate("Wipe the screen", "Clean your computer or phone screen", HabitCategory.PHYSICAL, 90,
                         2, 60),
 
                 new TaskTemplate("Desk cleanup", "Remove clutter from your desk", HabitCategory.COGNITIVE, 90, 2, 60),

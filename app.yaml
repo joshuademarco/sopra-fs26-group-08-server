@@ -16,6 +16,12 @@ resources:
 network:
   session_affinity: true     # needed for websockets
 
+automatic_scaling:
+  min_num_instances: 1
+  max_num_instances: 20
+  cpu_utilization:
+    target_utilization: 0.7
+
 env_variables:
   GOOGLE_CLIENT_ID: ""
   GOOGLE_CLIENT_SECRET: ""
