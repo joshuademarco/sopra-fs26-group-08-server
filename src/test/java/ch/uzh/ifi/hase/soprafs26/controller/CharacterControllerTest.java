@@ -19,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(CharacterController.class)
@@ -136,5 +137,48 @@ public class CharacterControllerTest {
                 .andExpect(jsonPath("$.resilience", is(testCharacter.getResilience())))
                 .andExpect(jsonPath("$.health", is(testCharacter.getHealth())))
                 .andExpect(jsonPath("$.maxHealth", is(testCharacter.getMaxHealth())));
+    }
+
+    // --------------- POST /users/{userId}/character/revive ---------------
+
+    @Test
+    public void reviveCharacter_validToken_returnsRevivedCharacter() throws Exception {
+        given(userService.getUserByToken("valid-token")).willReturn(testUser);
+        given(characterService.reviveCharacter(1L)).willReturn(testCharacter);
+
+        mockMvc.perform(post("/users/1/character/revive")
+                .cookie(new Cookie("token", "valid-token"))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.level", is(3)))
+                .andExpect(jsonPath("$.health", is(15)))
+                .andExpect(jsonPath("$.maxHealth", is(20)));
+    }
+
+    @Test
+    public void reviveCharacter_wrongUser_returnsForbidden() throws Exception {
+        User otherUser = new User();
+        otherUser.setId(2L);
+        otherUser.setToken("other-token");
+        otherUser.setStatus(UserStatus.ONLINE);
+
+        given(userService.getUserByToken("other-token")).willReturn(otherUser);
+
+        mockMvc.perform(post("/users/1/character/revive")
+                .cookie(new Cookie("token", "other-token"))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void reviveCharacter_invalidToken_returnsUnauthorized() throws Exception {
+        given(userService.getUserByToken("bad-token"))
+                .willThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid Token"));
+
+        mockMvc.perform(post("/users/1/character/revive")
+                .cookie(new Cookie("token", "bad-token"))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
     }
 }

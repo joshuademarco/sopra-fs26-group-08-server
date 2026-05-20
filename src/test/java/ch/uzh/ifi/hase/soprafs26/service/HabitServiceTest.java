@@ -14,9 +14,13 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.web.server.ResponseStatusException;
 
+import ch.uzh.ifi.hase.soprafs26.entity.HabitCompletionEvent;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -310,6 +314,53 @@ public class HabitServiceTest {
 
         // penalty applied exactly once despite two scheduler executions
         verify(characterService, times(1)).applyNegativeHabitPenalty(eq(1L), eq(1));
+    }
+
+    // ---------------tests for heatmap---------------
+    @Test
+    public void getHabitHeatmap_multipleEventsOnSameDay_aggregatesCount() {
+        LocalDate today = LocalDate.now(ZoneOffset.UTC);
+        Instant base = today.atStartOfDay(ZoneOffset.UTC).toInstant();
+
+        HabitCompletionEvent e1 = new HabitCompletionEvent();
+        e1.setCompletedAt(base);
+        HabitCompletionEvent e2 = new HabitCompletionEvent();
+        e2.setCompletedAt(base.plusSeconds(3600));
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+        when(completionEventRepository.findByUserId(1L)).thenReturn(List.of(e1, e2));
+
+        Map<LocalDate, Long> result = habitService.getHabitHeatmap(1L);
+
+        assertEquals(1, result.size());
+        assertEquals(2L, result.get(today));
+    }
+
+    @Test
+    public void getHabitHeatmap_eventsOnDifferentDays_separateEntries() {
+        LocalDate today = LocalDate.now(ZoneOffset.UTC);
+        LocalDate yesterday = today.minusDays(1);
+
+        HabitCompletionEvent e1 = new HabitCompletionEvent();
+        e1.setCompletedAt(today.atStartOfDay(ZoneOffset.UTC).toInstant());
+        HabitCompletionEvent e2 = new HabitCompletionEvent();
+        e2.setCompletedAt(yesterday.atStartOfDay(ZoneOffset.UTC).toInstant());
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+        when(completionEventRepository.findByUserId(1L)).thenReturn(List.of(e1, e2));
+
+        Map<LocalDate, Long> result = habitService.getHabitHeatmap(1L);
+
+        assertEquals(2, result.size());
+        assertEquals(1L, result.get(today));
+        assertEquals(1L, result.get(yesterday));
+    }
+
+    @Test
+    public void getHabitHeatmap_userNotFound_throwsNotFound() {
+        when(userRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(ResponseStatusException.class, () -> habitService.getHabitHeatmap(99L));
     }
 
     @Test

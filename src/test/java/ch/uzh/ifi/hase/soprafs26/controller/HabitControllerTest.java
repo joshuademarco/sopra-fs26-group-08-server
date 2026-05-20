@@ -19,7 +19,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -222,6 +224,31 @@ public class HabitControllerTest {
                 .cookie(new jakarta.servlet.http.Cookie("token", "valid-token"))
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isNoContent());
+    }
+
+    // GET /users/{userId}/habits/heatmap
+    @Test
+    public void getHeatmap_validToken_returnsMap() throws Exception {
+        given(userService.getUserByToken("valid-token")).willReturn(testUser);
+        given(habitService.getHabitHeatmap(1L)).willReturn(Map.of(LocalDate.of(2024, 1, 1), 3L));
+
+        mockMvc.perform(get("/users/1/habits/heatmap")
+                .cookie(new jakarta.servlet.http.Cookie("token", "valid-token")))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    public void getHeatmap_wrongUser_returnsForbidden() throws Exception {
+        User otherUser = new User();
+        otherUser.setId(2L);
+        otherUser.setToken("other-token");
+        otherUser.setStatus(UserStatus.ONLINE);
+
+        given(userService.getUserByToken("other-token")).willReturn(otherUser);
+
+        mockMvc.perform(get("/users/1/habits/heatmap")
+                .cookie(new jakarta.servlet.http.Cookie("token", "other-token")))
+            .andExpect(status().isForbidden());
     }
 
     @Test

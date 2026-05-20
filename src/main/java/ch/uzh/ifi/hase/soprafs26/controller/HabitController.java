@@ -1,7 +1,9 @@
 package ch.uzh.ifi.hase.soprafs26.controller;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -35,6 +37,15 @@ public class HabitController {
     }
 
     // ============================== habits ==============================
+    @GetMapping("/users/{userId}/habits/heatmap")
+    @ResponseStatus(HttpStatus.OK)
+    public Map<LocalDate, Long> getHabitHeatmap(@PathVariable Long userId,
+            @CookieValue(name = "token", required = true) String token) {
+        User requestingUser = userService.getUserByToken(token);
+        verifyOwnership(requestingUser.getId(), userId);
+        return habitService.getHabitHeatmap(userId);
+    }
+
     @GetMapping("/users/{userId}/habits")
     @ResponseStatus(HttpStatus.OK)
     public List<HabitGetDTO> getHabits(@PathVariable Long userId,
