@@ -16,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
+import ch.uzh.ifi.hase.soprafs26.repository.CharacterAchievementRepository;
 import ch.uzh.ifi.hase.soprafs26.repository.CharacterRepository;
 import ch.uzh.ifi.hase.soprafs26.repository.HabitCompletionEventRepository;
 import ch.uzh.ifi.hase.soprafs26.repository.HabitRepository;
@@ -44,6 +45,9 @@ public class UserServiceIntegrationTest {
     private CharacterRepository characterRepository;
 
 	@Autowired
+    private CharacterAchievementRepository characterAchievementRepository;
+
+	@Autowired
     private HabitCompletionEventRepository habitCompletionEventRepository;
 
 	@Autowired
@@ -65,6 +69,7 @@ public class UserServiceIntegrationTest {
         habitCompletionEventRepository.deleteAll();
         habitRepository.deleteAll();
         todoRepository.deleteAll();
+        characterAchievementRepository.deleteAll();
         characterRepository.deleteAll();
         userRepository.deleteAll();
     }
@@ -76,6 +81,7 @@ public class UserServiceIntegrationTest {
         habitCompletionEventRepository.deleteAll();
         habitRepository.deleteAll();
         todoRepository.deleteAll();
+        characterAchievementRepository.deleteAll();
         characterRepository.deleteAll();
         userRepository.deleteAll();
     }
