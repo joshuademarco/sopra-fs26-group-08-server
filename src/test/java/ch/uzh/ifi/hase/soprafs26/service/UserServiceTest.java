@@ -218,8 +218,7 @@ public class UserServiceTest {
         Mockito.when(userRepository.findAll()).thenReturn(manyUsers);
         Mockito.when(userRepository.findByToken("token5")).thenReturn(currentUser);
 
-        // Note: Change the parameter below to match your updated getLeaderboard signature (e.g. userId or token)
-        List<LeaderboardEntryDTO> leaderboard = userService.getLeaderboard();
+        List<LeaderboardEntryDTO> leaderboard = userService.getLeaderboard("token5");
 
         assertEquals(11, leaderboard.size(), "Leaderboard should return top 10 + current user");
         assertEquals("user15", leaderboard.get(0).getUsername(), "1st place should be user15");

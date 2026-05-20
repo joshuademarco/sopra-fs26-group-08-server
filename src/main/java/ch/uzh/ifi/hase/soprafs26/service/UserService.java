@@ -2,9 +2,11 @@ package ch.uzh.ifi.hase.soprafs26.service;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -199,8 +201,12 @@ public class UserService {
     }
 
     public List<LeaderboardEntryDTO> getLeaderboard() {
+        return getLeaderboard(null);
+    }
+
+    public List<LeaderboardEntryDTO> getLeaderboard(String token) {
         List<User> users = userRepository.findAll();
-        return users.stream()
+        List<User> sortedUsers = users.stream()
                 .filter(user -> user.getCharacter() != null)
                 .sorted((u1, u2) -> {
                     int levelCompare = Integer.compare(u2.getCharacter().getLevel(), u1.getCharacter().getLevel());
@@ -214,8 +220,24 @@ public class UserService {
                     }
                     return u1.getUsername().compareTo(u2.getUsername());
                 })
+                .toList();
+
+        List<LeaderboardEntryDTO> top10 = sortedUsers.stream()
+                .limit(10)
                 .map(user -> new LeaderboardEntryDTO(user.getUsername(), user.getCharacter().getExperience(),
                         user.getCharacter().getLevel()))
-                .toList();
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        if (token != null && !token.isBlank()) {
+            User currentUser = userRepository.findByToken(token);
+            if (currentUser != null && currentUser.getCharacter() != null) {
+                boolean inTop10 = top10.stream().anyMatch(dto -> dto.getUsername().equals(currentUser.getUsername()));
+                if (!inTop10) {
+                    top10.add(new LeaderboardEntryDTO(currentUser.getUsername(),
+                            currentUser.getCharacter().getExperience(), currentUser.getCharacter().getLevel()));
+                }
+            }
+        }
+        return top10;
     }
 }
