@@ -27,7 +27,7 @@ public class NotificationService {
     private String fromAddress;
 
     @Configuration
-    public class ResendConfig {
+    public static class ResendConfig {
         @Bean
         public Resend resend(@Value("${resend.api-key}") String apiKey) {
             return new Resend(apiKey);
