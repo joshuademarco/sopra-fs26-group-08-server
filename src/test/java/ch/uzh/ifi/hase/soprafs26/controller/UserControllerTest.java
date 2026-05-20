@@ -18,12 +18,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.web.server.ResponseStatusException;
-import jakarta.servlet.http.Cookie;
 
 import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.LeaderboardEntryDTO;
 import ch.uzh.ifi.hase.soprafs26.service.UserService;
+import jakarta.servlet.http.Cookie;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 
@@ -73,7 +73,7 @@ public class UserControllerTest {
 		// given
 		LeaderboardEntryDTO leaderboardEntry = new LeaderboardEntryDTO("testUsername", 345, 7);
 		List<LeaderboardEntryDTO> leaderboard = Collections.singletonList(leaderboardEntry);
-		given(userService.getLeaderboard("testToken")).willReturn(leaderboard);
+		given(userService.getLeaderboard()).willReturn(leaderboard);
 
 		MockHttpServletRequestBuilder getRequest = get("/leaderboard")
 				.cookie(new Cookie("token", "testToken"))
@@ -88,7 +88,7 @@ public class UserControllerTest {
 
 	@Test
 	public void givenEmptyLeaderboard_whenGetLeaderboard_thenReturnEmptyJsonArray() throws Exception {
-		given(userService.getLeaderboard("testToken")).willReturn(Collections.emptyList());
+		given(userService.getLeaderboard()).willReturn(Collections.emptyList());
 
 		MockHttpServletRequestBuilder getRequest = get("/leaderboard")
 				.cookie(new Cookie("token", "testToken"))

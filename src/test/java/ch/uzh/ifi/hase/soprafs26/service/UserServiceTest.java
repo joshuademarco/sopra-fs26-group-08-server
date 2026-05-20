@@ -135,7 +135,7 @@ public class UserServiceTest {
         Mockito.when(userRepository.findAll()).thenReturn(Arrays.asList(userLow, noCharacterUser, userHighB, userHighA));
         Mockito.when(userRepository.findByToken("testToken")).thenReturn(userHighA);
 
-        List<LeaderboardEntryDTO> leaderboard = userService.getLeaderboard("testToken");
+        List<LeaderboardEntryDTO> leaderboard = userService.getLeaderboard();
 
         assertEquals(3, leaderboard.size());
         assertEquals("alphaUser", leaderboard.get(0).getUsername());
@@ -153,7 +153,7 @@ public class UserServiceTest {
     public void getLeaderboard_noUsers_returnsEmptyList() {
         Mockito.when(userRepository.findAll()).thenReturn(Collections.emptyList());
 
-        List<LeaderboardEntryDTO> leaderboard = userService.getLeaderboard("testToken");
+        List<LeaderboardEntryDTO> leaderboard = userService.getLeaderboard();
 
         assertTrue(leaderboard.isEmpty());
     }
@@ -167,7 +167,7 @@ public class UserServiceTest {
 
         Mockito.when(userRepository.findAll()).thenReturn(Arrays.asList(noCharacterUser1, noCharacterUser2));
 
-        List<LeaderboardEntryDTO> leaderboard = userService.getLeaderboard("testToken");
+        List<LeaderboardEntryDTO> leaderboard = userService.getLeaderboard();
 
         assertTrue(leaderboard.isEmpty());
     }
@@ -189,7 +189,7 @@ public class UserServiceTest {
         Mockito.when(userRepository.findAll()).thenReturn(manyUsers);
         Mockito.when(userRepository.findByToken("testToken")).thenReturn(manyUsers.get(14));
 
-        List<LeaderboardEntryDTO> leaderboard = userService.getLeaderboard("testToken");
+        List<LeaderboardEntryDTO> leaderboard = userService.getLeaderboard();
 
         assertEquals(10, leaderboard.size(), "Leaderboard should only return the top 10 users");
         assertEquals("user15", leaderboard.get(0).getUsername(), "User with highest XP should be first");
@@ -219,7 +219,7 @@ public class UserServiceTest {
         Mockito.when(userRepository.findByToken("token5")).thenReturn(currentUser);
 
         // Note: Change the parameter below to match your updated getLeaderboard signature (e.g. userId or token)
-        List<LeaderboardEntryDTO> leaderboard = userService.getLeaderboard(currentUser.getToken());
+        List<LeaderboardEntryDTO> leaderboard = userService.getLeaderboard();
 
         assertEquals(11, leaderboard.size(), "Leaderboard should return top 10 + current user");
         assertEquals("user15", leaderboard.get(0).getUsername(), "1st place should be user15");
