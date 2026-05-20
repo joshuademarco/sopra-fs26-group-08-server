@@ -52,6 +52,7 @@ public class RaidService {
     private final RaidLiveService raidLiveService;
     private final ch.uzh.ifi.hase.soprafs26.service.CharacterLiveService characterLiveService;
     private final ItemService itemService;
+    private final NotificationService notificationService;
 
     @Autowired
     public RaidService(BossRaidRepository bossRaidRepository,
@@ -62,7 +63,8 @@ public class RaidService {
             GroupRepository groupRepository,
             RaidLiveService raidLiveService,
             ch.uzh.ifi.hase.soprafs26.service.CharacterLiveService characterLiveService,
-            ItemService itemService) {
+            ItemService itemService,
+            NotificationService notificationService) {
         this.bossRaidRepository = bossRaidRepository;
         this.raidParticipationRepository = raidParticipationRepository;
         this.userRepository = userRepository;
@@ -73,6 +75,7 @@ public class RaidService {
         this.raidLiveService = raidLiveService;
         this.characterLiveService = characterLiveService;
         this.itemService = itemService;
+        this.notificationService = notificationService;
     }
 
     public BossRaid createRaid(Long groupId, RaidPostDTO dto) {
@@ -92,6 +95,10 @@ public class RaidService {
         int windowDays = dto.getSearchWindowDays() != null ? dto.getSearchWindowDays() : 7;
         if (tryAutoSchedule(raid, group, windowDays)) {
             createCalendarEventsForRaid(raid);
+        }
+
+        for (User member : group.getUsers()) {
+            notificationService.sendRaidScheduledEmail(member, raid, group);
         }
 
         return raid;
@@ -235,6 +242,9 @@ public class RaidService {
             raidParticipationRepository.save(p);
         }
         userRepository.saveAll(participations.stream().map(RaidParticipation::getUser).collect(Collectors.toList()));
+        for (RaidParticipation p : participations) {
+            notificationService.sendRaidFinishedEmail(p.getUser(), raid);
+        }
     }
 
     private RaidTaskDTO buildRaidTaskDTO(RaidTask task, Map<Long, Integer> userWindowOffset, Instant raidStartedAt) {
@@ -292,6 +302,9 @@ public class RaidService {
             raid.startRaid();
             bossRaidRepository.save(raid);
             broadcastRaidUpdate(raid);
+            for (User member : raid.getGroup().getUsers()) {
+                notificationService.sendRaidStartedEmail(member, raid);
+            }
         }
     }
 
@@ -850,6 +863,10 @@ public class RaidService {
 
             if (tryAutoSchedule(newRaid, group, 7)) {
                 createCalendarEventsForRaid(newRaid);
+            }
+
+            for (User member : group.getUsers()) {
+                notificationService.sendRaidScheduledEmail(member, newRaid, group);
             }
         }
     }

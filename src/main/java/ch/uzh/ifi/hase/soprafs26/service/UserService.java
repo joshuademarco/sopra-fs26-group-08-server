@@ -36,13 +36,16 @@ public class UserService {
     private final Logger log = LoggerFactory.getLogger(UserService.class);
     private final UserRepository userRepository;
     private final CharacterService characterService;
+    private final NotificationService notificationService;
 
     @Autowired
     public UserService(@Qualifier("userRepository") UserRepository userRepository,
             CharacterService characterService,
-            CharacterRepository characterRepository) {
+            CharacterRepository characterRepository,
+            NotificationService notificationService) {
         this.userRepository = userRepository;
         this.characterService = characterService;
+        this.notificationService = notificationService;
     }
 
     public User getUserById(Long id) {
@@ -83,6 +86,7 @@ public class UserService {
         // create a character for the new user
         Character newCharacter = characterService.createCharacter(newUser, characterType);
         newUser.setCharacter(newCharacter);
+        notificationService.sendWelcomeEmail(newUser);
 
         log.debug("Created Information for User: {}", newUser);
         return newUser;
@@ -135,42 +139,42 @@ public class UserService {
         return user;
     }
 
-	public User changePassword(String token, String currentPassword, String newPassword) {
-		User user = getUserByToken(token);
-		if (!user.getPassword().equals(hashPassword(currentPassword))) {
-			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid current password");
-		}
-		user.setPassword(hashPassword(newPassword));
-		userRepository.saveAndFlush(user);
-		return user;
-	}
+    public User changePassword(String token, String currentPassword, String newPassword) {
+        User user = getUserByToken(token);
+        if (!user.getPassword().equals(hashPassword(currentPassword))) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid current password");
+        }
+        user.setPassword(hashPassword(newPassword));
+        userRepository.saveAndFlush(user);
+        return user;
+    }
 
-	public User updateProfile(String token, String username, String email) {
-		User user = getUserByToken(token);
-		validateProfileUpdate(user, username, email);
-		user.updateProfile(username, email);
-		userRepository.saveAndFlush(user);
-		return user;
-	}
+    public User updateProfile(String token, String username, String email) {
+        User user = getUserByToken(token);
+        validateProfileUpdate(user, username, email);
+        user.updateProfile(username, email);
+        userRepository.saveAndFlush(user);
+        return user;
+    }
 
     public User completeOnboarding(String token) {
-		User user = getUserByToken(token);
-		user.setOnboardingCompleted(true);
-		userRepository.saveAndFlush(user);
-		return user;
-	}
+        User user = getUserByToken(token);
+        user.setOnboardingCompleted(true);
+        userRepository.saveAndFlush(user);
+        return user;
+    }
 
-	private void validateProfileUpdate(User existingUser, String username, String email) {
-		User userByUsername = userRepository.findByUsername(username);
-		if (userByUsername != null && !userByUsername.getId().equals(existingUser.getId())) {
-			throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists");
-		}
+    private void validateProfileUpdate(User existingUser, String username, String email) {
+        User userByUsername = userRepository.findByUsername(username);
+        if (userByUsername != null && !userByUsername.getId().equals(existingUser.getId())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists");
+        }
 
-		User userByEmail = userRepository.findByEmail(email);
-		if (userByEmail != null && !userByEmail.getId().equals(existingUser.getId())) {
-			throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
-		}
-	}
+        User userByEmail = userRepository.findByEmail(email);
+        if (userByEmail != null && !userByEmail.getId().equals(existingUser.getId())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
+        }
+    }
 
     public User getUserByToken(String token) {
         if (token == null || token.isBlank()) {

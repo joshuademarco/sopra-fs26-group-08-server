@@ -30,13 +30,16 @@ public class UserServiceTest {
 	private UserRepository userRepository;
 
 	@Mock
-    private CharacterService characterService;
+	private CharacterService characterService;
 
 	@Mock
 	private CharacterRepository characterRepository;
 
 	@InjectMocks
 	private UserService userService;
+
+	@Mock
+	private NotificationService notificationService;
 
 	private User testUser;
 
@@ -54,7 +57,7 @@ public class UserServiceTest {
 		// when -> any object is being save in the userRepository -> return the dummy
 		// testUser
 		Mockito.when(characterService.createCharacter(any(), any())).thenReturn(new Character());
-        Mockito.when(userRepository.save(any())).thenReturn(testUser);
+		Mockito.when(userRepository.save(any())).thenReturn(testUser);
 	}
 
 	@Test
@@ -65,7 +68,7 @@ public class UserServiceTest {
 
 		// then
 		verify(userRepository, times(1)).save(any());
-        verify(characterService, times(1)).createCharacter(any(), any());
+		verify(characterService, times(1)).createCharacter(any(), any());
 
 		assertEquals(testUser.getId(), createdUser.getId());
 		assertEquals(testUser.getEmail(), createdUser.getEmail());
@@ -102,45 +105,46 @@ public class UserServiceTest {
 		assertThrows(ResponseStatusException.class, () -> userService.createUser(testUser));
 	}
 
-    @Test
-    public void getLeaderboard_returnsSortedAndFilteredLeaderboard() {
-        User userLow = new User();
-        userLow.setUsername("lowUser");
-        Character lowCharacter = new Character();
-        lowCharacter.setExperience(10);
-        lowCharacter.setLevel(1);
-        userLow.setCharacter(lowCharacter);
+	@Test
+	public void getLeaderboard_returnsSortedAndFilteredLeaderboard() {
+		User userLow = new User();
+		userLow.setUsername("lowUser");
+		Character lowCharacter = new Character();
+		lowCharacter.setExperience(10);
+		lowCharacter.setLevel(1);
+		userLow.setCharacter(lowCharacter);
 
-        User userHighA = new User();
-        userHighA.setUsername("alphaUser");
-        Character highCharacterA = new Character();
-        highCharacterA.setExperience(250);
-        highCharacterA.setLevel(5);
-        userHighA.setCharacter(highCharacterA);
+		User userHighA = new User();
+		userHighA.setUsername("alphaUser");
+		Character highCharacterA = new Character();
+		highCharacterA.setExperience(250);
+		highCharacterA.setLevel(5);
+		userHighA.setCharacter(highCharacterA);
 
-        User userHighB = new User();
-        userHighB.setUsername("betaUser");
-        Character highCharacterB = new Character();
-        highCharacterB.setExperience(250);
-        highCharacterB.setLevel(5);
-        userHighB.setCharacter(highCharacterB);
+		User userHighB = new User();
+		userHighB.setUsername("betaUser");
+		Character highCharacterB = new Character();
+		highCharacterB.setExperience(250);
+		highCharacterB.setLevel(5);
+		userHighB.setCharacter(highCharacterB);
 
-        User noCharacterUser = new User();
-        noCharacterUser.setUsername("noCharacterUser");
+		User noCharacterUser = new User();
+		noCharacterUser.setUsername("noCharacterUser");
 
-        Mockito.when(userRepository.findAll()).thenReturn(Arrays.asList(userLow, noCharacterUser, userHighB, userHighA));
+		Mockito.when(userRepository.findAll())
+				.thenReturn(Arrays.asList(userLow, noCharacterUser, userHighB, userHighA));
 
-        List<LeaderboardEntryDTO> leaderboard = userService.getLeaderboard();
+		List<LeaderboardEntryDTO> leaderboard = userService.getLeaderboard();
 
-        assertEquals(3, leaderboard.size());
-        assertEquals("alphaUser", leaderboard.get(0).getUsername());
-        assertEquals(250, leaderboard.get(0).getExperience());
-        assertEquals(5, leaderboard.get(0).getLevel());
-        assertEquals("betaUser", leaderboard.get(1).getUsername());
-        assertEquals(250, leaderboard.get(1).getExperience());
-        assertEquals(5, leaderboard.get(1).getLevel());
-        assertEquals("lowUser", leaderboard.get(2).getUsername());
-        assertEquals(10, leaderboard.get(2).getExperience());
-        assertEquals(1, leaderboard.get(2).getLevel());
-    }
+		assertEquals(3, leaderboard.size());
+		assertEquals("alphaUser", leaderboard.get(0).getUsername());
+		assertEquals(250, leaderboard.get(0).getExperience());
+		assertEquals(5, leaderboard.get(0).getLevel());
+		assertEquals("betaUser", leaderboard.get(1).getUsername());
+		assertEquals(250, leaderboard.get(1).getExperience());
+		assertEquals(5, leaderboard.get(1).getLevel());
+		assertEquals("lowUser", leaderboard.get(2).getUsername());
+		assertEquals(10, leaderboard.get(2).getExperience());
+		assertEquals(1, leaderboard.get(2).getLevel());
+	}
 }

@@ -21,10 +21,13 @@ public class GroupService {
 
   private final GroupRepository groupRepository;
   private final UserRepository userRepository;
+  private final NotificationService notificationService;
 
-  public GroupService(GroupRepository groupRepository, UserRepository userRepository) {
+  public GroupService(GroupRepository groupRepository, UserRepository userRepository,
+      NotificationService notificationService) {
     this.groupRepository = groupRepository;
     this.userRepository = userRepository;
+    this.notificationService = notificationService;
   }
 
   public Group createGroup(Group newGroup, String token) {
@@ -69,6 +72,11 @@ public class GroupService {
 
     user.addGroup(group);
     userRepository.save(user);
+    for (User member : group.getUsers()) {
+      if (!member.getId().equals(user.getId())) {
+        notificationService.sendUserJoinedGroupEmail(user, group);
+      }
+    }
 
     return group;
   }

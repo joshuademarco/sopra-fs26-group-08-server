@@ -47,6 +47,8 @@ public class RaidServiceTest {
     private CharacterLiveService characterLiveService;
     @Mock
     private ItemService itemService;
+    @Mock
+    private NotificationService notificationService;
 
     @InjectMocks
     private RaidService raidService;
