@@ -1,8 +1,12 @@
 package ch.uzh.ifi.hase.soprafs26.service;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +62,21 @@ public class HabitService {
         return habitRepository.findByUserId(userId);
     }
 
+    public Map<LocalDate, Long> getHabitHeatmap(Long userId) {
+        getUserOrThrow(userId);
+        List<HabitCompletionEvent> events = completionEventRepository.findByUserId(userId);
+        Map<LocalDate, Long> heatmap = new HashMap<>();
+        for (HabitCompletionEvent event : events) {
+            LocalDate date = event.getCompletedAt().atZone(ZoneOffset.UTC).toLocalDate();
+            if (heatmap.containsKey(date)) {
+                heatmap.put(date, heatmap.get(date) + 1);
+            } else {
+                heatmap.put(date, 1L);
+            }
+        }
+        return heatmap;
+    }
+
     public Habit createHabit(Long userId, Habit habit) {
         User user = getUserOrThrow(userId);
 
@@ -87,9 +106,9 @@ public class HabitService {
         }
         habit.setLastCompletedAt(Instant.now());
         habitRepository.save(habit);
-        achievementService.checkHabitAchievements(userId, habit.getStreak());
 
         if (habit.getPositive()) {
+            achievementService.checkHabitAchievements(userId, habit.getStreak());
             // positive habit -> award XP + update stat
             int baseXp = characterService.calculateBaseXp(habit.getWeight());
             double weatherMultiplier = getWeatherMultiplierSafely(habit.getCategory());
@@ -133,12 +152,12 @@ public class HabitService {
 
         for (Habit habit : overdueHabits) {
             if (habit.getPositive()) {
-                // positive habit missed then health penalty 
+                // positive habit missed then health penalty
                 characterService.applyNegativeHabitPenalty(habit.getUser().getId(), habit.getWeight());
                 habit.setPenaltyApplied(true); // UI signal: show warning on this habit card (#60 + #7)
             }
             habit.setStreak(0);
-            habit.setDueAt(calculateDueDate(habit)); 
+            habit.setDueAt(calculateDueDate(habit));
             habitRepository.save(habit);
             log.debug("Streak reset for overdue habit '{}', penalty={}", habit.getTitle(), habit.getPenaltyApplied());
         }
@@ -148,7 +167,7 @@ public class HabitService {
         for (Habit habit : completedPastDue) {
             habit.setCompleted(false);
             habit.setCompletedAt(null);
-            habit.setPenaltyApplied(false); 
+            habit.setPenaltyApplied(false);
             habitRepository.save(habit);
             log.debug("Reset completed habit '{}' for new period", habit.getTitle());
         }

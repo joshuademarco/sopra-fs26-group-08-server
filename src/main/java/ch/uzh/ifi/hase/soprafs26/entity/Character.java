@@ -104,16 +104,18 @@ public class Character implements Serializable {
     }
 
     // update stats based on habit category
+    public static final int MAX_STAT = 1000;
+
     public void increaseStat(HabitCategory category) {
         switch (category) {
             case PHYSICAL:
-                this.strength += 1;
+                this.strength = Math.min(MAX_STAT, this.strength + 1);
                 break;
             case COGNITIVE:
-                this.intelligence += 1;
+                this.intelligence = Math.min(MAX_STAT, this.intelligence + 1);
                 break;
             case EMOTIONAL:
-                this.resilience += 1;
+                this.resilience = Math.min(MAX_STAT, this.resilience + 1);
                 break;
         }
     }
