@@ -23,6 +23,7 @@ import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.LeaderboardEntryDTO;
 import ch.uzh.ifi.hase.soprafs26.service.UserService;
+import jakarta.servlet.http.Cookie;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 
@@ -74,13 +75,27 @@ public class UserControllerTest {
 		List<LeaderboardEntryDTO> leaderboard = Collections.singletonList(leaderboardEntry);
 		given(userService.getLeaderboard()).willReturn(leaderboard);
 
-		MockHttpServletRequestBuilder getRequest = get("/leaderboard").contentType(MediaType.APPLICATION_JSON);
+		MockHttpServletRequestBuilder getRequest = get("/leaderboard")
+				.cookie(new Cookie("token", "testToken"))
+				.contentType(MediaType.APPLICATION_JSON);
 
 		mockMvc.perform(getRequest).andExpect(status().isOk())
 				.andExpect(jsonPath("$", hasSize(1)))
 				.andExpect(jsonPath("$[0].username", is(leaderboardEntry.getUsername())))
 				.andExpect(jsonPath("$[0].experience", is(leaderboardEntry.getExperience())))
 				.andExpect(jsonPath("$[0].level", is(leaderboardEntry.getLevel())));
+	}
+
+	@Test
+	public void givenEmptyLeaderboard_whenGetLeaderboard_thenReturnEmptyJsonArray() throws Exception {
+		given(userService.getLeaderboard()).willReturn(Collections.emptyList());
+
+		MockHttpServletRequestBuilder getRequest = get("/leaderboard")
+				.cookie(new Cookie("token", "testToken"))
+				.contentType(MediaType.APPLICATION_JSON);
+
+		mockMvc.perform(getRequest).andExpect(status().isOk())
+				.andExpect(jsonPath("$", hasSize(0)));
 	}
 
 	/**
