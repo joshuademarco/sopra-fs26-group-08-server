@@ -18,6 +18,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.web.server.ResponseStatusException;
+import jakarta.servlet.http.Cookie;
 
 import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
@@ -72,15 +73,29 @@ public class UserControllerTest {
 		// given
 		LeaderboardEntryDTO leaderboardEntry = new LeaderboardEntryDTO("testUsername", 345, 7);
 		List<LeaderboardEntryDTO> leaderboard = Collections.singletonList(leaderboardEntry);
-		given(userService.getLeaderboard()).willReturn(leaderboard);
+		given(userService.getLeaderboard("testToken")).willReturn(leaderboard);
 
-		MockHttpServletRequestBuilder getRequest = get("/leaderboard").contentType(MediaType.APPLICATION_JSON);
+		MockHttpServletRequestBuilder getRequest = get("/leaderboard")
+				.cookie(new Cookie("token", "testToken"))
+				.contentType(MediaType.APPLICATION_JSON);
 
 		mockMvc.perform(getRequest).andExpect(status().isOk())
 				.andExpect(jsonPath("$", hasSize(1)))
 				.andExpect(jsonPath("$[0].username", is(leaderboardEntry.getUsername())))
 				.andExpect(jsonPath("$[0].experience", is(leaderboardEntry.getExperience())))
 				.andExpect(jsonPath("$[0].level", is(leaderboardEntry.getLevel())));
+	}
+
+	@Test
+	public void givenEmptyLeaderboard_whenGetLeaderboard_thenReturnEmptyJsonArray() throws Exception {
+		given(userService.getLeaderboard("testToken")).willReturn(Collections.emptyList());
+
+		MockHttpServletRequestBuilder getRequest = get("/leaderboard")
+				.cookie(new Cookie("token", "testToken"))
+				.contentType(MediaType.APPLICATION_JSON);
+
+		mockMvc.perform(getRequest).andExpect(status().isOk())
+				.andExpect(jsonPath("$", hasSize(0)));
 	}
 
 	/**
