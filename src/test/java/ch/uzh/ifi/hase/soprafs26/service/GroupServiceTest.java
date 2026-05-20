@@ -35,6 +35,9 @@ public class GroupServiceTest {
   @InjectMocks
   private GroupService groupService;
 
+  @Mock
+  private NotificationService notificationService;
+
   private User groupOwner;
 
   @BeforeEach
@@ -222,7 +225,6 @@ public class GroupServiceTest {
     assertThrows(ResponseStatusException.class, () -> groupService.leaveGroup(2L, "token"));
   }
 
-
   @Test
   public void updateGroup_validOwner_updatesName() {
     Group existingGroup = new Group();
@@ -294,7 +296,6 @@ public class GroupServiceTest {
 
     assertThrows(ResponseStatusException.class, () -> groupService.updateGroup(2L, dto, "token"));
   }
-
 
   @Test
   public void deleteGroup_validOwner_deletesGroup() {

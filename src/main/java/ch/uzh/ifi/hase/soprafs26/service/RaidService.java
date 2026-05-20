@@ -51,6 +51,7 @@ public class RaidService {
     private final RaidLiveService raidLiveService;
     private final ch.uzh.ifi.hase.soprafs26.service.CharacterLiveService characterLiveService;
     private final ItemService itemService;
+    private final NotificationService notificationService;
 
     @Autowired
     public RaidService(BossRaidRepository bossRaidRepository,
@@ -61,7 +62,8 @@ public class RaidService {
             GroupRepository groupRepository,
             RaidLiveService raidLiveService,
             ch.uzh.ifi.hase.soprafs26.service.CharacterLiveService characterLiveService,
-            ItemService itemService) {
+            ItemService itemService,
+            NotificationService notificationService) {
         this.bossRaidRepository = bossRaidRepository;
         this.raidParticipationRepository = raidParticipationRepository;
         this.userRepository = userRepository;
@@ -72,6 +74,7 @@ public class RaidService {
         this.raidLiveService = raidLiveService;
         this.characterLiveService = characterLiveService;
         this.itemService = itemService;
+        this.notificationService = notificationService;
     }
 
     public BossRaid createRaid(Long groupId, RaidPostDTO dto) {
@@ -91,6 +94,10 @@ public class RaidService {
         int windowDays = dto.getSearchWindowDays() != null ? dto.getSearchWindowDays() : 7;
         if (tryAutoSchedule(raid, group, windowDays)) {
             createCalendarEventsForRaid(raid);
+        }
+
+        for (User member : group.getUsers()) {
+            notificationService.sendRaidScheduledEmail(member, raid, group);
         }
 
         return raid;
@@ -194,12 +201,12 @@ public class RaidService {
                         + (p.getTasksCompleted() != null ? p.getTasksCompleted() : 0) * 10;
                 if (!items.isEmpty() && Math.random() < 0.25) {
                     Long userId = p.getUser().getId();
-                    int randomItem = (int)(Math.random() * items.size());
+                    int randomItem = (int) (Math.random() * items.size());
                     Long itemId = items.get(randomItem).getId();
                     try {
                         itemService.grantItem(userId, itemId);
                     } catch (ResponseStatusException ignored) {
-                    }  
+                    }
                 }
             } else {
                 xp = (p.getTasksCompleted() != null ? p.getTasksCompleted() : 0) * 5;
@@ -234,6 +241,9 @@ public class RaidService {
             raidParticipationRepository.save(p);
         }
         userRepository.saveAll(participations.stream().map(RaidParticipation::getUser).collect(Collectors.toList()));
+        for (RaidParticipation p : participations) {
+            notificationService.sendRaidFinishedEmail(p.getUser(), raid);
+        }
     }
 
     private RaidTaskDTO buildRaidTaskDTO(RaidTask task, Map<Long, Integer> userWindowOffset) {
@@ -284,6 +294,9 @@ public class RaidService {
             raid.startRaid();
             bossRaidRepository.save(raid);
             broadcastRaidUpdate(raid);
+            for (User member : raid.getGroup().getUsers()) {
+                notificationService.sendRaidStartedEmail(member, raid);
+            }
         }
     }
 
@@ -654,7 +667,9 @@ public class RaidService {
         raidTaskRepository.save(task);
     }
 
-    private record TaskTemplate(String title, String description, HabitCategory category, int successfulDamage, int groupDamage, int timeLimitSeconds) {}
+    private record TaskTemplate(String title, String description, HabitCategory category, int successfulDamage,
+            int groupDamage, int timeLimitSeconds) {
+    }
 
     private void createQuickTasksForRaid(BossRaid raid, List<User> members) {
         if (members.isEmpty())
@@ -663,47 +678,68 @@ public class RaidService {
 
         List<TaskTemplate> templates = List.of(
                 new TaskTemplate("Make your bed", "Tidy your bed right now", HabitCategory.PHYSICAL, 80, 1, 60),
-                new TaskTemplate("Stretch your legs", "Stretch both of your legs now!", HabitCategory.PHYSICAL, 80, 1, 60),
+                new TaskTemplate("Stretch your legs", "Stretch both of your legs now!", HabitCategory.PHYSICAL, 80, 1,
+                        60),
                 new TaskTemplate("Drink a glass of water", "Finish one full glass", HabitCategory.PHYSICAL, 80, 1, 60),
                 new TaskTemplate("Do 10 Push-ups", "Perform 10 push-ups", HabitCategory.PHYSICAL, 90, 2, 60),
-                new TaskTemplate("Posture check", "Make sure you sit and stand straight", HabitCategory.PHYSICAL, 90, 2, 15),
-                new TaskTemplate("Refill water bottle", "Refill and place it on your desk", HabitCategory.PHYSICAL, 100, 4, 30),
+                new TaskTemplate("Posture check", "Make sure you sit and stand straight", HabitCategory.PHYSICAL, 90, 2,
+                        15),
+                new TaskTemplate("Refill water bottle", "Refill and place it on your desk", HabitCategory.PHYSICAL, 100,
+                        4, 30),
                 new TaskTemplate("10 squats", "Do 10 bodyweight squats", HabitCategory.PHYSICAL, 110, 5, 60),
                 new TaskTemplate("Do 10 Squats", "Perform 10 Squats", HabitCategory.PHYSICAL, 90, 2, 60),
                 new TaskTemplate("Water Plants", "Give your plants some water", HabitCategory.PHYSICAL, 110, 5, 60),
                 new TaskTemplate("Jump Jump", "Make 10 jumps in place", HabitCategory.PHYSICAL, 90, 2, 60),
                 new TaskTemplate("Fruit", "Eat one piece of fruit", HabitCategory.PHYSICAL, 90, 2, 60),
-                new TaskTemplate("Wall Sit", "Lean against a wall in a squat for 60 seconds", HabitCategory.PHYSICAL, 90, 2, 60),
+                new TaskTemplate("Wall Sit", "Lean against a wall in a squat for 60 seconds", HabitCategory.PHYSICAL,
+                        90, 2, 60),
                 new TaskTemplate("Calf Raises", "Do 20 standing calf raises", HabitCategory.PHYSICAL, 90, 2, 45),
                 new TaskTemplate("Wash your face", "Splash cold water on your face", HabitCategory.PHYSICAL, 90, 2, 60),
-                new TaskTemplate("Take Vitamins", "Take your daily vitamins or supplements if needed", HabitCategory.PHYSICAL, 90, 2, 60),
-                new TaskTemplate("Wipe teh screen", "Clean your computer or phone screen", HabitCategory.PHYSICAL, 90, 2, 60),
+                new TaskTemplate("Take Vitamins", "Take your daily vitamins or supplements if needed",
+                        HabitCategory.PHYSICAL, 90, 2, 60),
+                new TaskTemplate("Wipe teh screen", "Clean your computer or phone screen", HabitCategory.PHYSICAL, 90,
+                        2, 60),
 
                 new TaskTemplate("Desk cleanup", "Remove clutter from your desk", HabitCategory.COGNITIVE, 90, 2, 60),
-                new TaskTemplate("Gratefulness Check", "Write down 3 things you're grateful for", HabitCategory.COGNITIVE, 100, 4, 45),
-                new TaskTemplate("Answer unread messages", "Reply to 3 unread messages", HabitCategory.COGNITIVE, 100, 4, 60),
-                new TaskTemplate("Plan top 3 tasks", "List your top 3 priorities for today", HabitCategory.COGNITIVE, 110, 5, 60),
-                new TaskTemplate("Clear one small task", "Complete one pending micro-task", HabitCategory.COGNITIVE, 110, 5, 60),
-                new TaskTemplate("Learn a word", "Look up the translation of a new word in a foreign language", HabitCategory.COGNITIVE, 100, 4, 60),
-                new TaskTemplate("Brain Dump", "Write down everything stressing you out", HabitCategory.COGNITIVE, 90, 2, 60),
-                new TaskTemplate("Write a goal", "Write down one thing you want to finish today", HabitCategory.COGNITIVE, 90, 2, 60),
-                new TaskTemplate("Calendar Check", "Review your schedule for tomorrow", HabitCategory.COGNITIVE, 90, 2, 60),
-                new TaskTemplate("Quick Math", "Multiply 13 by 7 in your head right now", HabitCategory.COGNITIVE, 90, 2, 45),                
+                new TaskTemplate("Gratefulness Check", "Write down 3 things you're grateful for",
+                        HabitCategory.COGNITIVE, 100, 4, 45),
+                new TaskTemplate("Answer unread messages", "Reply to 3 unread messages", HabitCategory.COGNITIVE, 100,
+                        4, 60),
+                new TaskTemplate("Plan top 3 tasks", "List your top 3 priorities for today", HabitCategory.COGNITIVE,
+                        110, 5, 60),
+                new TaskTemplate("Clear one small task", "Complete one pending micro-task", HabitCategory.COGNITIVE,
+                        110, 5, 60),
+                new TaskTemplate("Learn a word", "Look up the translation of a new word in a foreign language",
+                        HabitCategory.COGNITIVE, 100, 4, 60),
+                new TaskTemplate("Brain Dump", "Write down everything stressing you out", HabitCategory.COGNITIVE, 90,
+                        2, 60),
+                new TaskTemplate("Write a goal", "Write down one thing you want to finish today",
+                        HabitCategory.COGNITIVE, 90, 2, 60),
+                new TaskTemplate("Calendar Check", "Review your schedule for tomorrow", HabitCategory.COGNITIVE, 90, 2,
+                        60),
+                new TaskTemplate("Quick Math", "Multiply 13 by 7 in your head right now", HabitCategory.COGNITIVE, 90,
+                        2, 45),
 
                 new TaskTemplate("Deep breathing", "Take 10 slow deep breaths", HabitCategory.EMOTIONAL, 80, 1, 60),
-                new TaskTemplate("Positivity Check", "Write down 3 things positive about yourself", HabitCategory.EMOTIONAL, 90, 2, 60),
-                new TaskTemplate("One positive message", "Send an encouraging message to someone", HabitCategory.EMOTIONAL, 100, 4, 60),
-                new TaskTemplate("Eye break", "Look away from the screen for 60 seconds", HabitCategory.EMOTIONAL, 110, 5, 60),
-                new TaskTemplate("Window View", "Look out the window for 60 seconds", HabitCategory.EMOTIONAL, 90, 2, 60),
-                new TaskTemplate("Reach Out", "Text a family member or friend just to say hi", HabitCategory.EMOTIONAL, 90, 2, 60),
-                new TaskTemplate("Self-Compliment", "Identify one thing you did well today", HabitCategory.EMOTIONAL, 90, 2, 60)
-        );
+                new TaskTemplate("Positivity Check", "Write down 3 things positive about yourself",
+                        HabitCategory.EMOTIONAL, 90, 2, 60),
+                new TaskTemplate("One positive message", "Send an encouraging message to someone",
+                        HabitCategory.EMOTIONAL, 100, 4, 60),
+                new TaskTemplate("Eye break", "Look away from the screen for 60 seconds", HabitCategory.EMOTIONAL, 110,
+                        5, 60),
+                new TaskTemplate("Window View", "Look out the window for 60 seconds", HabitCategory.EMOTIONAL, 90, 2,
+                        60),
+                new TaskTemplate("Reach Out", "Text a family member or friend just to say hi", HabitCategory.EMOTIONAL,
+                        90, 2, 60),
+                new TaskTemplate("Self-Compliment", "Identify one thing you did well today", HabitCategory.EMOTIONAL,
+                        90, 2, 60));
 
         for (int i = 0; i < templates.size(); i++) {
             TaskTemplate t = templates.get(i);
             User assignedUser = members.get(i % size);
             int taskOrder = (i / size) + 1;
-            createQuickTask(raid, assignedUser, t.title(), t.description(), t.category(), t.successfulDamage(), t.groupDamage(), taskOrder, t.timeLimitSeconds());
+            createQuickTask(raid, assignedUser, t.title(), t.description(), t.category(), t.successfulDamage(),
+                    t.groupDamage(), taskOrder, t.timeLimitSeconds());
         }
     }
 
@@ -807,6 +843,10 @@ public class RaidService {
 
             if (tryAutoSchedule(newRaid, group, 7)) {
                 createCalendarEventsForRaid(newRaid);
+            }
+
+            for (User member : group.getUsers()) {
+                notificationService.sendRaidScheduledEmail(member, newRaid, group);
             }
         }
     }
